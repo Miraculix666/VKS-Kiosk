@@ -1,0 +1,8 @@
+.agent/
+dump/
+WIP/
+locks/.locked
+node_modules/
+*.log
+
+*.pkg
