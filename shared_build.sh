@@ -20,9 +20,20 @@ install_dependencies() {
     echo "=========================================="
     echo " [1/4] Abhaengigkeiten installieren"
     echo "=========================================="
-    apt-get update -qq || true
-    apt-get install -y syslinux syslinux-utils cpio coreutils usbutils xorriso p7zip-full wget whiptail dialog 2>&1 | \
-        grep -v "already the newest" | grep -v "^$" || true
+    if command -v apt-get >/dev/null 2>&1; then
+        apt-get update -qq || true
+        apt-get install -y syslinux syslinux-utils cpio coreutils usbutils xorriso p7zip-full wget whiptail dialog 2>&1 | \
+            grep -v "already the newest" | grep -v "^$" || true
+    elif command -v dnf >/dev/null 2>&1; then
+        dnf install -y syslinux syslinux-nonlinux cpio coreutils usbutils xorriso p7zip p7zip-plugins wget newt dialog || true
+    elif command -v zypper >/dev/null 2>&1; then
+        zypper install -y syslinux cpio coreutils usbutils xorriso p7zip wget newt dialog || true
+    elif command -v pacman >/dev/null 2>&1; then
+        pacman -Sy --noconfirm syslinux cpio coreutils usbutils xorriso p7zip wget libnewt dialog || true
+    else
+        echo "FEHLER: Kein unterstuetzter Paketmanager (apt, dnf, zypper, pacman) gefunden."
+        echo "Bitte installieren Sie die Abhaengigkeiten manuell."
+    fi
     echo "  -> OK"
     echo ""
 }
