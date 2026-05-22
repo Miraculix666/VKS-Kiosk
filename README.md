@@ -14,10 +14,10 @@ VKS-Kiosk ist ein sicheres, minimalistisches und stark eingeschränktes Linux-Li
 
 ## 🛠️ Erstellung des USB-Sticks (Build-Prozess)
 
-Du kannst den Kiosk-Installations-Stick entweder direkt unter **Linux** oder unter **Windows 10/11 (mit WSL)** erstellen. Das Skript lädt automatisch die aktuellste Debian-`netinst.iso` herunter, injiziert die Kiosk-Skripte und brennt sie auf deinen USB-Stick.
+Der Kiosk-Installations-Stick kann entweder direkt unter **Linux** oder unter **Windows 10/11 (mit WSL)** erstellt werden. Das Skript lädt automatisch die aktuellste Debian-`netinst.iso` herunter, injiziert die Kiosk-Skripte und brennt sie auf den USB-Stick.
 
 > [!CAUTION]
-> **ACHTUNG:** Das Skript formatiert den angeschlossenen USB-Stick unwiderruflich! Stelle sicher, dass du den richtigen Stick angeschlossen hast und keine wichtigen Daten darauf sind. Sticks **über 128 GB** werden zur Sicherheit ignoriert.
+> **ACHTUNG:** Das Skript formatiert den angeschlossenen USB-Stick unwiderruflich! Stelle sicher, dass der richtige Stick angeschlossen ist und sich keine wichtigen Daten darauf befinden. Sticks **über 128 GB** werden zur Sicherheit ignoriert.
 
 ### Methode A: Windows (via WSL2 & PowerShell)
 
@@ -48,28 +48,28 @@ Für die Erstellung unter Windows wurde eine automatisierte Strecke mittels Wind
    - Es öffnet anschließend automatisch die Linux-Shell (Debian).
 
 4. **In der Linux-Shell (WSL) den Build starten:**
-   Sobald du das Linux-Terminal siehst (`VKS@...$`), starte das ISO-Build-Skript:
+   Sobald das Linux-Terminal sichtbar ist (`VKS@...$`), starte das ISO-Build-Skript:
    ```bash
    sudo ./make_install_wsl.sh
    ```
-   *(Tipp: Wenn du nach dem `sudo` Passwort für den Benutzer gefragt wirst und dieses nicht kennst, starte WSL alternativ direkt mit `wsl -d Debian -u root` aus der PowerShell).*
+   *(Tipp: Wenn nach dem `sudo` Passwort gefragt wird und dieses nicht bekannt ist, starte WSL alternativ direkt mit `wsl -d Debian -u root` aus der PowerShell).*
 
 5. **Bestätigen und Warten:**
-   Das Skript lädt Debian herunter, entpackt es, injiziert das Kiosk-Setup und flasht alles auf den Stick. Wenn der Vorgang abgeschlossen ist, kannst du den Stick abziehen und den Futro damit booten.
+   Das Skript lädt Debian herunter, entpackt es, injiziert das Kiosk-Setup und flasht alles auf den Stick. Wenn der Vorgang abgeschlossen ist, kann der Stick abgezogen und der Futro damit gebootet werden.
 
 #### 💡 Fehlerbehebung (Windows/WSL)
 - **Fehler: "keine geeignete SD-Karte gefunden"**
-  WSL konnte deinen USB-Stick nicht sehen. Breche ab (`exit`) und stelle sicher, dass du das PowerShell-Skript *als Administrator* ausgeführt hast. Manchmal hilft es, den Stick kurz abzuziehen, neu einzustecken und das `.ps1` Skript erneut zu starten.
+  WSL konnte den USB-Stick nicht sehen. Breche ab (`exit`) und stelle sicher, dass das PowerShell-Skript *als Administrator* ausgeführt wurde. Manchmal hilft es, den Stick kurz abzuziehen, neu einzustecken und das `.ps1` Skript erneut zu starten.
 - **Fehler: "Permission denied / Unable to acquire the dpkg frontend lock"**
-  Du hast in der Linux-Konsole das Wort `sudo` vor `./make_install_wsl.sh` vergessen.
+  In der Linux-Konsole wurde das Wort `sudo` vor `./make_install_wsl.sh` vergessen.
 - **Fehler: Rote Fehlermeldungen über Berechtigungen und `sysctl.d`**
-  Du hast versehentlich `make_vks_*.sh` auf deinem Host-Computer ausgeführt! Dieses Skript darf **nur** vom fertigen USB-Stick auf dem Thin-Client (Futro) ausgeführt werden.
+  Versehentlich wurde `make_vks_*.sh` auf dem Host-Computer ausgeführt! Dieses Skript darf **nur** vom fertigen USB-Stick auf dem Thin-Client (Futro) ausgeführt werden.
 
 ---
 
 ### Methode B: Natives Linux
 
-Wenn du ein natives Ubuntu oder Debian nutzt, ist der Prozess noch einfacher.
+Bei der Nutzung eines nativen Ubuntu oder Debian ist der Prozess noch einfacher.
 
 1. **Abhängigkeiten installieren:**
    Das Skript installiert benötigte Tools (`syslinux`, `xorriso`, `7zip`, etc.) automatisch per `apt`.
@@ -81,7 +81,7 @@ Wenn du ein natives Ubuntu oder Debian nutzt, ist der Prozess noch einfacher.
    sudo ./make_install.sh
    ```
 
-3. Das Skript identifiziert deinen USB-Stick, baut die ISO zusammen und brennt diese.
+3. Das Skript identifiziert den USB-Stick, baut die ISO zusammen und brennt diese.
 
 ---
 
@@ -95,7 +95,7 @@ Wenn du ein natives Ubuntu oder Debian nutzt, ist der Prozess noch einfacher.
 - `grub.cfg`: Konfiguriert den Bootloader auf dem USB-Stick (Normaler Boot vs. Debug Boot).
 
 ---
-*Created with 💙 by Antigravity AI*
+
 
 ---
 
@@ -104,9 +104,9 @@ Wenn du ein natives Ubuntu oder Debian nutzt, ist der Prozess noch einfacher.
 Das Kiosk-System läuft by-default in einem Read-Only Modus (via `overlayfs` und `tmpfs`), um maximale Ausfallsicherheit zu gewährleisten.
 
 **Berechtigungen erlangen:**
-1. **Debug-Modus:** Wenn du das System per "Debian Live/Rescue (Manual)" im Bootmenü (GRUB) startest, kommst du auf eine normale Shell.
+1. **Debug-Modus:** Wenn das System per "Debian Live/Rescue (Manual)" im Bootmenü (GRUB) startest, startet eine normale Shell.
 2. **Root Login:** Da `sudo` für den normalen Benutzer (`vksuser`) gesperrt ist, kann der Root-User über den direkten Konsolenlogin oder über SSH (sofern das Netzwerk konfiguriert ist und der Admin einen Key hinterlegt hat) genutzt werden. Das Passwort für root wird in der `preseed.cfg` festgelegt.
-3. **Persistenz (Immutable aufheben):** Willst du das Zielsystem dauerhaft modifizieren, kannst du in `/scripts/make_vks.sh` (vor der Installation) die Erstellung des `overlay.mount` Services entfernen oder auf dem Zielgerät den Service via `systemctl disable overlay.mount` abschalten. Das System bootet danach regulär schreibbar von der Festplatte.
+3. **Persistenz (Immutable aufheben):** Um das Zielsystem dauerhaft zu modifizieren, kann in `/scripts/make_vks.sh` (vor der Installation) die Erstellung des `overlay.mount` Services entfernen oder auf dem Zielgerät den Service via `systemctl disable overlay.mount` abschalten. Das System bootet danach regulär schreibbar von der Festplatte.
 
 ## 💽 Live Image via QEMU vs. Live-Build
 
@@ -114,5 +114,5 @@ Das Kiosk-System läuft by-default in einem Read-Only Modus (via `overlayfs` und
 
 - **QEMU-Ansatz:** Ein System in einer VM (QEMU) vollautomatisiert zu installieren und die fertige virtuelle Festplatte dann als `.img` zu extrahieren, wäre machbar, um ein sofort lauffähiges "Live-System" zu erhalten, das per dd gebrannt werden kann. Dies ist jedoch aufwändig, fehleranfällig (Bootloader-Konfiguration für unterschiedliche Architekturen) und das Image wird sehr groß.
 - **Aktueller Ansatz (Netinst + Preseed):** Der aktuelle Ansatz manipuliert einen minimalen Debian Installer (`netinst`), der die Kiosk-Logik injiziert bekommt. Dies hat den massiven Vorteil, dass das erzeugte ISO sehr klein ist. Es ist außerdem universell:
-  - Du kannst das ISO auf einen Stick brennen und ihn klassisch nutzen, um Thin-Clients zu bespielen.
-  - **Ventoy-Kompatibilität:** Durch die neu eingeführte `.env` Option `AUTO_WIPE_TARGET_DISK=false` kannst du dieses ISO nun sicher auf einen Multiboot-Stick (z.B. Ventoy) packen. Der Installer fragt dich nun, wohin er installieren soll, anstatt gnadenlos den Ventoy-Stick zu löschen!
+  - Das ISO kann auf einen Stick gebrannt und klassisch genutzt werden, um Thin-Clients zu bespielen.
+  - **Ventoy-Kompatibilität:** Durch die neu eingeführte `.env` Option `AUTO_WIPE_TARGET_DISK=false` kann dieses ISO nun sicher auf einen Multiboot-Stick (z.B. Ventoy) packen. Der Installer fragt nun, wohin er installieren soll, anstatt gnadenlos den Ventoy-Stick zu löschen!

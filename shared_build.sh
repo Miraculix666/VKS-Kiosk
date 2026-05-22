@@ -215,7 +215,7 @@ select_and_flash_usb() {
     fi
 
     DEVINFO="$(lsblk -dpno NAME,SIZE,MODEL "$SELECTED" 2>/dev/null || echo "$SELECTED")"
-    WARN_MSG="!!! OBACHT !!!\nDas Geraet:\n$DEVINFO\nwird UNWIDERRUFLICH und VOLLSTAENDIG geloescht!\n\nBist du sicher?"
+    WARN_MSG="!!! OBACHT !!!\nDas Geraet:\n$DEVINFO\nwird UNWIDERRUFLICH und VOLLSTAENDIG geloescht!\n\nSoll der Vorgang fortgesetzt werden?"
 
     if command -v whiptail >/dev/null 2>&1; then
         if ! whiptail --title "WARNUNG" --yesno "$WARN_MSG" 12 78; then
@@ -224,7 +224,7 @@ select_and_flash_usb() {
         fi
     else
         echo -e "$WARN_MSG"
-        read -r -p "  Bist du sicher? (j/n): " CHOICE
+        read -r -p "  Soll der Vorgang fortgesetzt werden? (j/n): " CHOICE
         if [ "$CHOICE" != "j" ]; then
             echo "  Abbruch durch Benutzer."
             return 0

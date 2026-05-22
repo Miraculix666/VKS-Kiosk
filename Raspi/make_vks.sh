@@ -174,7 +174,7 @@ table inet filter {
             ct state established,related accept
             ct state invalid drop
             ip saddr @ssh_rate_limit tcp dport 22 ct state new counter drop
-            	# machst du gute Guck hier!!	
+		# Achtung: Rate Limit!!
 			ip saddr 192.168.200.0/24 tcp dport 22 ct state new \
                 limit rate 3/minute \
                 add @ssh_rate_limit { ip saddr timeout 5m } \
