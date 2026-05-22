@@ -35,6 +35,7 @@ install_dependencies
 download_iso
 build_iso
 select_and_flash_usb
+cleanup_environment
 
 echo ""
 echo "Erfolgreich abgeschlossen."

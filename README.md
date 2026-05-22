@@ -96,3 +96,23 @@ Wenn du ein natives Ubuntu oder Debian nutzt, ist der Prozess noch einfacher.
 
 ---
 *Created with 💙 by Antigravity AI*
+
+---
+
+## 💻 Entwickler & Debugging
+
+Das Kiosk-System läuft by-default in einem Read-Only Modus (via `overlayfs` und `tmpfs`), um maximale Ausfallsicherheit zu gewährleisten.
+
+**Berechtigungen erlangen:**
+1. **Debug-Modus:** Wenn du das System per "Debian Live/Rescue (Manual)" im Bootmenü (GRUB) startest, kommst du auf eine normale Shell.
+2. **Root Login:** Da `sudo` für den normalen Benutzer (`vksuser`) gesperrt ist, kann der Root-User über den direkten Konsolenlogin oder über SSH (sofern das Netzwerk konfiguriert ist und der Admin einen Key hinterlegt hat) genutzt werden. Das Passwort für root wird in der `preseed.cfg` festgelegt.
+3. **Persistenz (Immutable aufheben):** Willst du das Zielsystem dauerhaft modifizieren, kannst du in `/scripts/make_vks.sh` (vor der Installation) die Erstellung des `overlay.mount` Services entfernen oder auf dem Zielgerät den Service via `systemctl disable overlay.mount` abschalten. Das System bootet danach regulär schreibbar von der Festplatte.
+
+## 💽 Live Image via QEMU vs. Live-Build
+
+*Warum erzeugt dieses Skript ein Installer-ISO und nicht direkt ein natives Live-ISO (z.B. per Debian `live-build` oder indem das System einmal in QEMU installiert und dann als `.img` exportiert wird)?*
+
+- **QEMU-Ansatz:** Ein System in einer VM (QEMU) vollautomatisiert zu installieren und die fertige virtuelle Festplatte dann als `.img` zu extrahieren, wäre machbar, um ein sofort lauffähiges "Live-System" zu erhalten, das per dd gebrannt werden kann. Dies ist jedoch aufwändig, fehleranfällig (Bootloader-Konfiguration für unterschiedliche Architekturen) und das Image wird sehr groß.
+- **Aktueller Ansatz (Netinst + Preseed):** Der aktuelle Ansatz manipuliert einen minimalen Debian Installer (`netinst`), der die Kiosk-Logik injiziert bekommt. Dies hat den massiven Vorteil, dass das erzeugte ISO sehr klein ist. Es ist außerdem universell:
+  - Du kannst das ISO auf einen Stick brennen und ihn klassisch nutzen, um Thin-Clients zu bespielen.
+  - **Ventoy-Kompatibilität:** Durch die neu eingeführte `.env` Option `AUTO_WIPE_TARGET_DISK=false` kannst du dieses ISO nun sicher auf einen Multiboot-Stick (z.B. Ventoy) packen. Der Installer fragt dich nun, wohin er installieren soll, anstatt gnadenlos den Ventoy-Stick zu löschen!

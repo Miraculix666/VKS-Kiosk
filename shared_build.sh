@@ -15,6 +15,8 @@ fi
 MAX_USB_SIZE_GB=${MAX_USB_SIZE_GB:-128}
 DEBIAN_ISO_URL=${DEBIAN_ISO_URL:-"https://cdimage.debian.org/debian-cd/current/amd64/iso-cd"}
 SCRIPT_VERSION=${SCRIPT_VERSION:-"2.0"}
+AUTO_WIPE_TARGET_DISK=${AUTO_WIPE_TARGET_DISK:-false}
+CLEANUP_PROMPT=${CLEANUP_PROMPT:-true}
 
 install_dependencies() {
     echo "=========================================="
@@ -121,6 +123,16 @@ build_iso() {
     cp "${CURRDIR}/overlay.py"  "${INSTALL_DIR}/"
     cp "${CURRDIR}/${DAT}"      "${INSTALL_DIR}/make_vks.sh"
     cp "${CURRDIR}/grub.cfg"    ./boot/grub/
+
+    # Ventoy / Sicherheits-Mod: Verhindert automatisches Loeschen, wenn nicht explizit erlaubt
+    if [ "$AUTO_WIPE_TARGET_DISK" = "false" ]; then
+        echo "  Passe preseed.cfg an (Sicherer Modus: keine autom. Formatierung)..."
+        sed -i 's/^d-i partman-auto\/method/#d-i partman-auto\/method/' preseed.cfg
+        sed -i 's/^d-i partman-auto\/init_automatically_partition/#d-i partman-auto\/init_automatically_partition/' preseed.cfg
+        sed -i 's/^d-i partman\/choose_partition/#d-i partman\/choose_partition/' preseed.cfg
+        sed -i 's/^d-i partman\/confirm/#d-i partman\/confirm/' preseed.cfg
+        sed -i 's/^d-i partman\/confirm_nooverwrite/#d-i partman\/confirm_nooverwrite/' preseed.cfg
+    fi
 
     echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
     rm -f preseed.cfg
@@ -229,4 +241,56 @@ select_and_flash_usb() {
     echo "=========================================="
     echo "  USB-Stick erfolgreich erstellt!"
     echo "=========================================="
+}
+
+cleanup_environment() {
+    if [ "$CLEANUP_PROMPT" = "true" ]; then
+        echo ""
+        echo "=========================================="
+        echo " [5/5] Bereinigung (optional)"
+        echo "=========================================="
+
+        declare -a CLEANUP_OPTIONS
+        CLEANUP_OPTIONS=(
+            "1" "Loesche temporaeres Arbeitsverzeichnis (workdir/)" "ON"
+            "2" "Loesche das heruntergeladene Basis-Debian-ISO" "OFF"
+            "3" "Loesche das generierte VKS-Kiosk ISO" "OFF"
+        )
+
+        if command -v whiptail >/dev/null 2>&1; then
+            CHOICES=$(whiptail --title "Bereinigung" --checklist "Welche Dateien sollen entfernt werden?" 15 78 4 "${CLEANUP_OPTIONS[@]}" 3>&1 1>&2 2>&3) || CHOICES=""
+        else
+            echo "Bereinigungsoptionen:"
+            echo "[1] temporaeres Arbeitsverzeichnis (workdir/)"
+            echo "[2] Basis-Debian-ISO"
+            echo "[3] VKS-Kiosk ISO"
+            read -r -p "Auswahl (kommagetrennt, z.B. 1,2) [Leer=Keine]: " TEXT_CHOICES
+            CHOICES=""
+            [[ "$TEXT_CHOICES" == *"1"* ]] && CHOICES='"1" '
+            [[ "$TEXT_CHOICES" == *"2"* ]] && CHOICES+='"2" '
+            [[ "$TEXT_CHOICES" == *"3"* ]] && CHOICES+='"3" '
+        fi
+
+        if [[ "$CHOICES" == *"\"1\""* ]]; then
+            echo "  Entferne ${CURRDIR}/workdir ..."
+            rm -Rf "${CURRDIR}/workdir"
+        fi
+        if [[ "$CHOICES" == *"\"2\""* ]]; then
+            echo "  Entferne ${CURRDIR}/${ISO} ..."
+            rm -f "${CURRDIR}/${ISO}"
+        fi
+        if [[ "$CHOICES" == *"\"3\""* ]]; then
+            echo "  Entferne $OUTISO ..."
+            rm -f "$OUTISO"
+        fi
+    fi
+
+    if grep -q "microsoft" /proc/version 2>/dev/null; then
+        echo ""
+        echo "  HINWEIS (Windows / WSL):"
+        echo "  Um den USB-Stick in Windows wieder sichtbar zu machen,"
+        echo "  fuehre in einer administrativen PowerShell aus:"
+        echo "  usbipd unbind -b <BUSID>"
+        echo ""
+    fi
 }

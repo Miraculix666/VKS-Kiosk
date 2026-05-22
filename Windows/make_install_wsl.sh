@@ -43,6 +43,7 @@ if [ -n "${OUTISO:-}" ]; then
 fi
 
 select_and_flash_usb
+cleanup_environment
 
 echo ""
 echo "Erfolgreich abgeschlossen."
