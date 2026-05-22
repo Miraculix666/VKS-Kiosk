@@ -62,7 +62,7 @@ xset s noblank &
 xset -dpms &
 sleep 5
 rm -Rf /home/vksuser/.config/vivaldi/Default/Sessions/*
-/usr/bin/vivaldi-stable --app=https://join.hipos-vks.polizei.nrw --enable-gpu --ignore-gpu-blocklist --gpu-rasterization --enable-oop-rasterization --no-first-run &
+/usr/bin/vivaldi-stable --app=https://join.hipos-vks.polizei.nrw --kiosk --incognito --use-fake-ui-for-media-stream --autoplay-policy=no-user-gesture-required --check-for-update-interval=31536000 --enable-gpu --ignore-gpu-blocklist --gpu-rasterization --enable-oop-rasterization --no-first-run &
 sleep 5
 TOKEN=0
 while true; do
@@ -78,7 +78,7 @@ if [ -n "\$PID" ]; then
 elif [ -z "\$PID" ]; then
         echo "Kein Vivaldi-Fenster gefunden!"
 	    rm -Rf /home/vksuser/.config/vivaldi/Default/Sessions/*
-	    /usr/bin/vivaldi-stable --app=https://join.hipos-vks.polizei.nrw --enable-gpu --ignore-gpu-blocklist --gpu-rasterization --enable-oop-rasterization --no-first-run &
+	    /usr/bin/vivaldi-stable --app=https://join.hipos-vks.polizei.nrw --kiosk --incognito --use-fake-ui-for-media-stream --autoplay-policy=no-user-gesture-required --check-for-update-interval=31536000 --enable-gpu --ignore-gpu-blocklist --gpu-rasterization --enable-oop-rasterization --no-first-run &
 	    PID=\$(pgrep -f "vivaldi-stable|vivaldi")
 	    WIN_ID=\$(xdotool search --pid "\$PID" 2>/dev/null | head -n 1)
 	    xdotool windowactivate "\$WIN_ID"
@@ -400,6 +400,11 @@ chmod -R 755 /home/vksuser/.config
 mv /usr/bin/light-locker /usr/bin/light-locker.nn
 mkdir -p /home_template/vksuser
 chown -R vksuser:vksuser /home_template/vksuser
+# XFCE Kiosk Hardening
+su - vksuser -c "dbus-launch xfconf-query -c xfce4-desktop -p /desktop-icons/style -s 0 --create -t int"
+su - vksuser -c "dbus-launch xfconf-query -c xfwm4 -p /general/use_compositing -s false --create -t bool"
+su - vksuser -c "dbus-launch xfconf-query -c xfce4-panel -p /panels/panel-1/autohide-behavior -s 2 --create -t int"
+
 rsync -a --delete /home/vksuser/ /home_template/vksuser/
 
 

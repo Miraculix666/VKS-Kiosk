@@ -62,7 +62,24 @@ rsync
 python3
 python3-tk
 sudo
+calamares
+calamares-settings-debian
 PACKAGES
+
+# Erstelle den Installer-Button fuer das Live-System
+mkdir -p config/includes.chroot/home/vksuser/Desktop
+cat << 'DESKTOP' > config/includes.chroot/home/vksuser/Desktop/install.desktop
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=VKS-Kiosk Installieren
+Comment=Installiert das System auf eine lokale Festplatte
+Exec=sudo calamares
+Icon=drive-harddisk
+Terminal=false
+Categories=System;
+DESKTOP
+chmod +x config/includes.chroot/home/vksuser/Desktop/install.desktop
 
 # Injizieren des Payload-Skripts als First-Boot-Service im Live-System
 mkdir -p config/includes.chroot/scripts

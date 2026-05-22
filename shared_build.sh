@@ -161,7 +161,8 @@ select_and_flash_usb() {
     echo " [4/4] USB-Stick beschreiben (optional)"
     echo "=========================================="
 
-    DEVICES="$(lsblk -dpno NAME,SIZE,TRAN,MODEL 2>/dev/null | grep -vE 'loop|rom|boot|ram' | grep -v '^$' || true)"
+    # Nutze -pno um auch Partitionen anzuzeigen, falls mehrere USB Sticks gesteckt sind.
+    DEVICES="$(lsblk -pno NAME,SIZE,TRAN,MODEL,FSTYPE 2>/dev/null | grep -vE 'loop|rom|boot|ram' | grep -v '^$' || true)"
 
     if [ -z "$DEVICES" ]; then
         echo "  Keine beschreibbaren Blockgeraete gefunden."

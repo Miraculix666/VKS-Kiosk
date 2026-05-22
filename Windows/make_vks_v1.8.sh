@@ -56,7 +56,7 @@ xset s noblank &
 xset -dpms &
 sleep 5
 rm -Rf /home/vksuser/.config/vivaldi/Default/Sessions/*
-/usr/bin/vivaldi-stable --app=https://join.hipos-vks.polizei.nrw --enable-gpu --ignore-gpu-blocklist --gpu-rasterization --enable-oop-rasterization --no-first-run &
+/usr/bin/vivaldi-stable --app=https://join.hipos-vks.polizei.nrw --kiosk --incognito --use-fake-ui-for-media-stream --autoplay-policy=no-user-gesture-required --check-for-update-interval=31536000 --enable-gpu --ignore-gpu-blocklist --gpu-rasterization --enable-oop-rasterization --no-first-run &
 sleep 5
 TOKEN=0
 while true; do
@@ -72,7 +72,7 @@ if [ -n "\$PID" ]; then
 elif [ -z "\$PID" ]; then
         echo "Kein Vivaldi-Fenster gefunden!"
 	    rm -Rf /home/vksuser/.config/vivaldi/Default/Sessions/*
-	    /usr/bin/vivaldi-stable --app=https://join.hipos-vks.polizei.nrw --enable-gpu --ignore-gpu-blocklist --gpu-rasterization --enable-oop-rasterization --no-first-run &
+	    /usr/bin/vivaldi-stable --app=https://join.hipos-vks.polizei.nrw --kiosk --incognito --use-fake-ui-for-media-stream --autoplay-policy=no-user-gesture-required --check-for-update-interval=31536000 --enable-gpu --ignore-gpu-blocklist --gpu-rasterization --enable-oop-rasterization --no-first-run &
 	    PID=\$(pgrep -f "vivaldi-stable|vivaldi")
 	    WIN_ID=\$(xdotool search --pid "\$PID" 2>/dev/null | head -n 1)
 	    xdotool windowactivate "\$WIN_ID"
