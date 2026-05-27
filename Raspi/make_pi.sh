@@ -26,7 +26,6 @@ if [ -z $USB ]; then
 	echo "############################################################################"
 	exit 1
 fi
-#USB=$(lsblk -o TYPE,NAME,HOTPLUG | grep "$i" | grep "sd" | cut -d' ' -f2 | tail -n2 | head -n 1)
 IMG=$(curl -s https://downloads.raspberrypi.com/os_list_imagingutility_v4.json | jq -r '.os_list[] | select(.name == "Raspberry Pi OS (32-bit)") | .url')
 curl -L $IMG -o raspios_full.img.xz 2>&1
 
