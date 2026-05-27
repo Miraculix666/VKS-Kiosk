@@ -28,7 +28,6 @@ if [ -z $USB ]; then
 	echo "############################################################################"
 	exit 1
 fi
-#USB=$(lsblk -o TYPE,NAME,HOTPLUG | grep "$i" | grep "sd" | cut -d' ' -f2)
 BASE_URL=https://cdimage.debian.org/debian-cd/current/amd64/iso-cd
 ISO=$( wget -qO - $BASE_URL/SHA512SUMS | grep netinst | grep -v mac | head -n 1 | awk '{ print $2 }' )
 VERSION=$(echo $ISO | cut -d'-' -f2)
