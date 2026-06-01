@@ -36,17 +36,26 @@ if [ ! -f "$ISO" ]; then
 	wget "$BASE_URL/$ISO" -O "$ISO"
 fi
 STICK=$(lsusb | grep -v "root hub")
+CURRDIR=$(dirname "$(readlink -f "$0")")
+SHARED_DIR="${CURRDIR}/../shared"
+
 WORKDIR=/temp
-DAT=$(ls -c /home/$USER/make_vks* | head - n1)
+DAT="$(ls -ct "${SHARED_DIR}"/make_vks*.sh 2>/dev/null | head -n 1 || true)"
+if [ -z "$DAT" ]; then
+    echo "FEHLER: Kein make_vks*.sh Skript in ${SHARED_DIR} gefunden!"
+    exit 1
+fi
+DAT="$(basename "$DAT")"
+
 rm -Rf $WORKDIR
 mkdir $WORKDIR
 7z x -o$WORKDIR $ISO
 cd $WORKDIR
 gunzip install.amd/initrd.gz
-cp /home/$USER/preseed.cfg .
-cp /home/$USER/$DAT ./install/make_vks.sh
-cp /home/$USER/overlay.py ./install
-cp /home/$USER/grub.cfg ./boot/grub/
+cp "${SHARED_DIR}/preseed.cfg" .
+cp "${SHARED_DIR}/$DAT" ./install/make_vks.sh
+cp "${SHARED_DIR}/overlay.py" ./install/
+cp "${SHARED_DIR}/grub.cfg" ./boot/grub/
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm preseed.cfg
 gzip install.amd/initrd

@@ -37,6 +37,7 @@ echo ""
 echo "[2/4] Debian netinst ISO herunterladen ..."
 
 CURRDIR="$(pwd)"
+SHARED_DIR="$(dirname "${CURRDIR}")/shared"
 WORKDIR=/workdir
 BASE_URL="https://cdimage.debian.org/debian-cd/current/amd64/iso-cd"
 
@@ -66,10 +67,10 @@ echo ""
 echo "[3/4] ISO entpacken, modifizieren und neu bauen ..."
 
 # Payload-Skript finden (neuestes make_vks*)
-DAT="$(ls -ct "${CURRDIR}"/make_vks*.sh 2>/dev/null | head -n 1 || true)"
+DAT="$(ls -ct "${SHARED_DIR}"/make_vks*.sh 2>/dev/null | head -n 1 || true)"
 if [ -z "$DAT" ]; then
-    echo "FEHLER: Kein make_vks*.sh Skript im aktuellen Verzeichnis gefunden!"
-    echo "       Verzeichnis: $CURRDIR"
+    echo "FEHLER: Kein make_vks*.sh Skript im Verzeichnis gefunden!"
+    echo "       Verzeichnis: $SHARED_DIR"
     exit 1
 fi
 DAT="$(basename "$DAT")"
@@ -77,8 +78,8 @@ echo "  Payload-Skript: $DAT"
 
 # Alle benoetigten Dateien pruefen
 for f in preseed.cfg overlay.py grub.cfg "$DAT"; do
-    if [ ! -f "${CURRDIR}/${f}" ]; then
-        echo "FEHLER: Benoettigte Datei fehlt: ${CURRDIR}/${f}"
+    if [ ! -f "${SHARED_DIR}/${f}" ]; then
+        echo "FEHLER: Benoettigte Datei fehlt: ${SHARED_DIR}/${f}"
         exit 1
     fi
 done
@@ -104,7 +105,7 @@ echo "  Injiziere Kiosk-Skripte ..."
 
 # initrd patchen
 gunzip install.amd/initrd.gz
-cp "${CURRDIR}/preseed.cfg" .
+cp "${SHARED_DIR}/preseed.cfg" .
 
 # Sicherstellen dass ./install ein Verzeichnis ist (in manchen ISO-Versionen heisst es anders)
 INSTALL_DIR=""
@@ -120,9 +121,9 @@ if [ -z "$INSTALL_DIR" ]; then
     exit 1
 fi
 
-cp "${CURRDIR}/overlay.py"  "${INSTALL_DIR}/"
-cp "${CURRDIR}/${DAT}"      "${INSTALL_DIR}/make_vks.sh"
-cp "${CURRDIR}/grub.cfg"    ./boot/grub/
+cp "${SHARED_DIR}/overlay.py"  "${INSTALL_DIR}/"
+cp "${SHARED_DIR}/${DAT}"      "${INSTALL_DIR}/make_vks.sh"
+cp "${SHARED_DIR}/grub.cfg"    ./boot/grub/
 
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm -f preseed.cfg
