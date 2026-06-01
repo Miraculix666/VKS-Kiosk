@@ -76,12 +76,17 @@ DAT="$(basename "$DAT")"
 echo "  Payload-Skript: $DAT"
 
 # Alle benoetigten Dateien pruefen
-for f in preseed.cfg overlay.py grub.cfg "$DAT"; do
+for f in preseed.cfg overlay.py "$DAT"; do
     if [ ! -f "${CURRDIR}/${f}" ]; then
         echo "FEHLER: Benoettigte Datei fehlt: ${CURRDIR}/${f}"
         exit 1
     fi
 done
+
+if [ ! -f "${CURRDIR}/../shared/grub.cfg" ]; then
+    echo "FEHLER: Benoettigte Datei fehlt: ${CURRDIR}/../shared/grub.cfg"
+    exit 1
+fi
 
 # Workdir sauber aufbauen
 rm -Rf "$WORKDIR"
@@ -122,7 +127,7 @@ fi
 
 cp "${CURRDIR}/overlay.py"  "${INSTALL_DIR}/"
 cp "${CURRDIR}/${DAT}"      "${INSTALL_DIR}/make_vks.sh"
-cp "${CURRDIR}/grub.cfg"    ./boot/grub/
+cp "${CURRDIR}/../shared/grub.cfg"    ./boot/grub/
 
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm -f preseed.cfg
