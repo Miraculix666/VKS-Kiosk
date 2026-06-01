@@ -66,10 +66,10 @@ echo ""
 echo "[3/4] ISO entpacken, modifizieren und neu bauen ..."
 
 # Payload-Skript finden (neuestes make_vks*)
-DAT="$(ls -ct "${CURRDIR}"/make_vks*.sh 2>/dev/null | head -n 1 || true)"
+DAT="$(ls -ct "${CURRDIR}"/../shared/make_vks*.sh 2>/dev/null | head -n 1 || true)"
 if [ -z "$DAT" ]; then
-    echo "FEHLER: Kein make_vks*.sh Skript im aktuellen Verzeichnis gefunden!"
-    echo "       Verzeichnis: $CURRDIR"
+    echo "FEHLER: Kein make_vks*.sh Skript im shared Verzeichnis gefunden!"
+    echo "       Verzeichnis: ${CURRDIR}/../shared"
     exit 1
 fi
 DAT="$(basename "$DAT")"
@@ -77,8 +77,8 @@ echo "  Payload-Skript: $DAT"
 
 # Alle benoetigten Dateien pruefen
 for f in preseed.cfg overlay.py grub.cfg "$DAT"; do
-    if [ ! -f "${CURRDIR}/${f}" ]; then
-        echo "FEHLER: Benoettigte Datei fehlt: ${CURRDIR}/${f}"
+    if [ ! -f "${CURRDIR}/../shared/${f}" ]; then
+        echo "FEHLER: Benoettigte Datei fehlt: ${CURRDIR}/../shared/${f}"
         exit 1
     fi
 done
@@ -104,7 +104,7 @@ echo "  Injiziere Kiosk-Skripte ..."
 
 # initrd patchen
 gunzip install.amd/initrd.gz
-cp "${CURRDIR}/preseed.cfg" .
+cp "${CURRDIR}/../shared/preseed.cfg" .
 
 # Sicherstellen dass ./install ein Verzeichnis ist (in manchen ISO-Versionen heisst es anders)
 INSTALL_DIR=""
@@ -120,9 +120,9 @@ if [ -z "$INSTALL_DIR" ]; then
     exit 1
 fi
 
-cp "${CURRDIR}/overlay.py"  "${INSTALL_DIR}/"
-cp "${CURRDIR}/${DAT}"      "${INSTALL_DIR}/make_vks.sh"
-cp "${CURRDIR}/grub.cfg"    ./boot/grub/
+cp "${CURRDIR}/../shared/overlay.py"  "${INSTALL_DIR}/"
+cp "${CURRDIR}/../shared/${DAT}"      "${INSTALL_DIR}/make_vks.sh"
+cp "${CURRDIR}/../shared/grub.cfg"    ./boot/grub/
 
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm -f preseed.cfg
