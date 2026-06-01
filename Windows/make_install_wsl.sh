@@ -77,7 +77,7 @@ echo "  Payload-Skript: $DAT"
 
 # Alle benoetigten Dateien pruefen
 for f in preseed.cfg overlay.py grub.cfg "$DAT"; do
-    if [ ! -f "${CURRDIR}/${f}" ]; then
+    if [ ! -f "${CURRDIR}/${f}" ] && [ ! -f "${CURRDIR}/../shared/${f}" ]; then
         echo "FEHLER: Benoettigte Datei fehlt: ${CURRDIR}/${f}"
         exit 1
     fi
@@ -104,7 +104,7 @@ echo "  Injiziere Kiosk-Skripte ..."
 
 # initrd patchen
 gunzip install.amd/initrd.gz
-cp "${CURRDIR}/preseed.cfg" .
+cp "${CURRDIR}/../shared/preseed.cfg" .
 
 # Sicherstellen dass ./install ein Verzeichnis ist (in manchen ISO-Versionen heisst es anders)
 INSTALL_DIR=""
@@ -120,9 +120,9 @@ if [ -z "$INSTALL_DIR" ]; then
     exit 1
 fi
 
-cp "${CURRDIR}/overlay.py"  "${INSTALL_DIR}/"
+cp "${CURRDIR}/../shared/overlay.py"  "${INSTALL_DIR}/overlay.py"
 cp "${CURRDIR}/${DAT}"      "${INSTALL_DIR}/make_vks.sh"
-cp "${CURRDIR}/grub.cfg"    ./boot/grub/
+cp "${CURRDIR}/../shared/grub.cfg"    ./boot/grub/
 
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm -f preseed.cfg

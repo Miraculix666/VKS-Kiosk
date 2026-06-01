@@ -72,6 +72,7 @@ sudo raspi-config nonint do_timezone Europe/Berlin
 sudo /boot/firmware/make_vks.sh
 rm -f /boot/firmware/firstrun.sh
 EOF
+CURRDIR="$(dirname "$(readlink -f "$0")")"
 
 touch /mnt/meta-data
 cat <<EOF | tee /mnt/user-data
@@ -81,6 +82,6 @@ runcmd:
 EOF
 chmod +x /mnt/firstrun.sh
 cp make_vks.sh /mnt
-cp overlay.py /mnt
+cp $CURRDIR/../shared/overlay.py /mnt
 umount /mnt 2>&1
 echo "Done. SD-Karte ausgeworfen ..."
