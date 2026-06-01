@@ -41,9 +41,10 @@ DAT=$(ls -c /home/$USER/make_vks* | head - n1)
 rm -Rf $WORKDIR
 mkdir $WORKDIR
 7z x -o$WORKDIR $ISO
+CURRDIR=$(pwd)
 cd $WORKDIR
 gunzip install.amd/initrd.gz
-cp /home/$USER/preseed.cfg .
+cp ${CURRDIR}/../shared/preseed.cfg preseed.cfg
 cp /home/$USER/$DAT ./install/make_vks.sh
 cp /home/$USER/overlay.py ./install
 cp /home/$USER/grub.cfg ./boot/grub/

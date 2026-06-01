@@ -76,7 +76,7 @@ DAT="$(basename "$DAT")"
 echo "  Payload-Skript: $DAT"
 
 # Alle benoetigten Dateien pruefen
-for f in preseed.cfg overlay.py grub.cfg "$DAT"; do
+for f in ../shared/preseed.cfg overlay.py grub.cfg "$DAT"; do
     if [ ! -f "${CURRDIR}/${f}" ]; then
         echo "FEHLER: Benoettigte Datei fehlt: ${CURRDIR}/${f}"
         exit 1
@@ -104,7 +104,7 @@ echo "  Injiziere Kiosk-Skripte ..."
 
 # initrd patchen
 gunzip install.amd/initrd.gz
-cp "${CURRDIR}/preseed.cfg" .
+cp "${CURRDIR}/../shared/preseed.cfg" preseed.cfg
 
 # Sicherstellen dass ./install ein Verzeichnis ist (in manchen ISO-Versionen heisst es anders)
 INSTALL_DIR=""
