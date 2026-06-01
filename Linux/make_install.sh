@@ -1,5 +1,25 @@
 #!/bin/bash
 export PATH=$PATH:/usr/sbin/
+
+CURRDIR=$(dirname "$(readlink -f "$0")")
+if [ -f "$CURRDIR/../.env" ]; then
+	set -a
+	source "$CURRDIR/../.env"
+	set +a
+else
+	echo "FEHLER: .env Datei nicht gefunden! Bitte eine .env Datei im Root-Verzeichnis mit VKS_ROOT_PASSWORD und VKS_USER_PASSWORD erstellen."
+	exit 1
+fi
+
+if [ -z "$VKS_ROOT_PASSWORD" ] || [ -z "$VKS_USER_PASSWORD" ]; then
+	echo "FEHLER: VKS_ROOT_PASSWORD oder VKS_USER_PASSWORD in der .env Datei nicht gesetzt!"
+	exit 1
+fi
+
+# Generate crypted passwords
+ROOT_PW_CRYPTED=$(echo "$VKS_ROOT_PASSWORD" | openssl passwd -6 -stdin)
+USER_PW_CRYPTED=$(echo "$VKS_USER_PASSWORD" | openssl passwd -6 -stdin)
+
 ############################################################################################################################
 #                                                                                                                          #
 #                                           		VKS-Futro Script                                                       #
@@ -37,16 +57,22 @@ if [ ! -f "$ISO" ]; then
 fi
 STICK=$(lsusb | grep -v "root hub")
 WORKDIR=/temp
-DAT=$(ls -c /home/$USER/make_vks* | head - n1)
+DAT="$(ls -ct "${CURRDIR}"/make_vks*.sh 2>/dev/null | head -n 1 || true)"
+DAT="$(basename "$DAT")"
 rm -Rf $WORKDIR
 mkdir $WORKDIR
 7z x -o$WORKDIR $ISO
 cd $WORKDIR
 gunzip install.amd/initrd.gz
-cp /home/$USER/preseed.cfg .
-cp /home/$USER/$DAT ./install/make_vks.sh
-cp /home/$USER/overlay.py ./install
-cp /home/$USER/grub.cfg ./boot/grub/
+cp "$CURRDIR/preseed.cfg" .
+
+# Replace placeholders with crypted passwords
+sed -i "s|ROOT_PW_PLACEHOLDER|$ROOT_PW_CRYPTED|g" preseed.cfg
+sed -i "s|USER_PW_PLACEHOLDER|$USER_PW_CRYPTED|g" preseed.cfg
+
+cp "$CURRDIR/$DAT" ./install/make_vks.sh
+cp "$CURRDIR/overlay.py" ./install
+cp "$CURRDIR/grub.cfg" ./boot/grub/
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm preseed.cfg
 gzip install.amd/initrd

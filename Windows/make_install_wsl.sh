@@ -14,6 +14,25 @@ export PATH=$PATH:/usr/sbin:/usr/local/sbin
 # Fehler sofort abbrechen, AUSSER bei explizit toleriertem Code
 set -euo pipefail
 
+CURRDIR="$(pwd)"
+if [ -f "$CURRDIR/../.env" ]; then
+	set -a
+	source "$CURRDIR/../.env"
+	set +a
+else
+	echo "FEHLER: .env Datei nicht gefunden! Bitte eine .env Datei im Root-Verzeichnis mit VKS_ROOT_PASSWORD und VKS_USER_PASSWORD erstellen."
+	exit 1
+fi
+
+if [ -z "$VKS_ROOT_PASSWORD" ] || [ -z "$VKS_USER_PASSWORD" ]; then
+	echo "FEHLER: VKS_ROOT_PASSWORD oder VKS_USER_PASSWORD in der .env Datei nicht gesetzt!"
+	exit 1
+fi
+
+# Generate crypted passwords
+ROOT_PW_CRYPTED=$(echo "$VKS_ROOT_PASSWORD" | openssl passwd -6 -stdin)
+USER_PW_CRYPTED=$(echo "$VKS_USER_PASSWORD" | openssl passwd -6 -stdin)
+
 echo ""
 echo "=========================================="
 echo "  VKS-Kiosk ISO Builder (WSL-Version)"
@@ -105,6 +124,10 @@ echo "  Injiziere Kiosk-Skripte ..."
 # initrd patchen
 gunzip install.amd/initrd.gz
 cp "${CURRDIR}/preseed.cfg" .
+
+# Replace placeholders with crypted passwords
+sed -i "s|ROOT_PW_PLACEHOLDER|$ROOT_PW_CRYPTED|g" preseed.cfg
+sed -i "s|USER_PW_PLACEHOLDER|$USER_PW_CRYPTED|g" preseed.cfg
 
 # Sicherstellen dass ./install ein Verzeichnis ist (in manchen ISO-Versionen heisst es anders)
 INSTALL_DIR=""
