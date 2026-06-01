@@ -21,6 +21,23 @@ echo "=========================================="
 echo ""
 
 # ============================================================
+# [0/4] Passwort festlegen
+# ============================================================
+echo "[0/4] Passwort fuer root und vksuser festlegen ..."
+read -r -s -p "  Bitte Passwort eingeben (leer lassen fuer zufaelliges Passwort): " VKS_PASSWORD
+echo ""
+
+if [ -z "$VKS_PASSWORD" ]; then
+    # Generate a random 16-character alphanumeric password
+    VKS_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 16)
+    echo "  Kein Passwort eingegeben. Zufaelliges Passwort generiert: $VKS_PASSWORD"
+    echo "  BITTE NOTIEREN! Es wird im Installations-Stick verwendet."
+else
+    echo "  Passwort gesetzt."
+fi
+echo ""
+
+# ============================================================
 # [1/4] Abhaengigkeiten installieren
 # ============================================================
 echo "[1/4] Abhaengigkeiten pruefen und installieren ..."
@@ -105,6 +122,7 @@ echo "  Injiziere Kiosk-Skripte ..."
 # initrd patchen
 gunzip install.amd/initrd.gz
 cp "${CURRDIR}/preseed.cfg" .
+sed -i "s/VKS_PASSWORD_PLACEHOLDER/$VKS_PASSWORD/g" preseed.cfg
 
 # Sicherstellen dass ./install ein Verzeichnis ist (in manchen ISO-Versionen heisst es anders)
 INSTALL_DIR=""

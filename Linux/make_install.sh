@@ -21,6 +21,20 @@ export PATH=$PATH:/usr/sbin/
 ############################################################################################################################
 
 apt-get install syslinux syslinux-utils cpio coreutils xorriso 7zip -y
+
+echo "############################################################################"
+echo "Passwort fuer root und vksuser festlegen ..."
+read -r -s -p "Bitte Passwort eingeben (leer lassen fuer zufaelliges Passwort): " VKS_PASSWORD
+echo ""
+
+if [ -z "$VKS_PASSWORD" ]; then
+    VKS_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 16)
+    echo "Kein Passwort eingegeben. Zufaelliges Passwort generiert: $VKS_PASSWORD"
+    echo "BITTE NOTIEREN! Es wird im Installations-Stick verwendet."
+else
+    echo "Passwort gesetzt."
+fi
+echo "############################################################################"
 USB=$(lsblk -b -dpno NAME,SIZE,TRAN | awk '$3=="usb" && $2 < 128*1024*1024*1024 {print $1}' | tail -n1)
 if [ -z $USB ]; then
 	echo "############################################################################"
@@ -37,16 +51,18 @@ if [ ! -f "$ISO" ]; then
 fi
 STICK=$(lsusb | grep -v "root hub")
 WORKDIR=/temp
-DAT=$(ls -c /home/$USER/make_vks* | head - n1)
+CURRDIR=$(dirname "$(readlink -f "$0")")
+DAT=$(ls -c $CURRDIR/make_vks* | head -n1)
 rm -Rf $WORKDIR
 mkdir $WORKDIR
 7z x -o$WORKDIR $ISO
 cd $WORKDIR
 gunzip install.amd/initrd.gz
-cp /home/$USER/preseed.cfg .
-cp /home/$USER/$DAT ./install/make_vks.sh
-cp /home/$USER/overlay.py ./install
-cp /home/$USER/grub.cfg ./boot/grub/
+cp $CURRDIR/preseed.cfg .
+sed -i "s/VKS_PASSWORD_PLACEHOLDER/$VKS_PASSWORD/g" preseed.cfg
+cp $DAT ./install/make_vks.sh
+cp $CURRDIR/overlay.py ./install
+cp $CURRDIR/grub.cfg ./boot/grub/
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm preseed.cfg
 gzip install.amd/initrd
