@@ -91,7 +91,7 @@ Wenn du ein natives Ubuntu oder Debian nutzt, ist der Prozess noch einfacher.
 - `Windows/make_install_wsl.sh` / `Linux/make_install.sh`: Das **Builder-Skript**. Es modifiziert die originale Debian ISO und macht daraus den bootfähigen VKS-Installations-Stick.
 - `make_vks_v*.sh`: Das **Payload-Skript**. Dies ist die tatsächliche Magie, die auf dem Thin-Client ausgeführt wird. Es installiert den Kiosk-Browser, härtet das System und richtet `log2ram` ein.
 - `preseed.cfg`: Die Auto-Antwort-Datei (Unattended Setup) für den Debian-Installer, damit während der Installation keine Benutzereingaben notwendig sind.
-- `overlay.py`: Python-Skript (wird vom preseed aufgerufen), welches das finale Kiosk-Setup nach der Grundinstallation orchestriert.
+- `shared/overlay.py`: Python-Skript (wird vom preseed aufgerufen), welches das finale Kiosk-Setup nach der Grundinstallation orchestriert.
 - `grub.cfg`: Konfiguriert den Bootloader auf dem USB-Stick (Normaler Boot vs. Debug Boot).
 
 ---

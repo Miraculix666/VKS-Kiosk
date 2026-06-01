@@ -76,7 +76,7 @@ DAT="$(basename "$DAT")"
 echo "  Payload-Skript: $DAT"
 
 # Alle benoetigten Dateien pruefen
-for f in preseed.cfg overlay.py grub.cfg "$DAT"; do
+for f in preseed.cfg ../shared/overlay.py grub.cfg "$DAT"; do
     if [ ! -f "${CURRDIR}/${f}" ]; then
         echo "FEHLER: Benoettigte Datei fehlt: ${CURRDIR}/${f}"
         exit 1
@@ -120,7 +120,7 @@ if [ -z "$INSTALL_DIR" ]; then
     exit 1
 fi
 
-cp "${CURRDIR}/overlay.py"  "${INSTALL_DIR}/"
+cp "${CURRDIR}/../shared/overlay.py"  "${INSTALL_DIR}/"
 cp "${CURRDIR}/${DAT}"      "${INSTALL_DIR}/make_vks.sh"
 cp "${CURRDIR}/grub.cfg"    ./boot/grub/
 

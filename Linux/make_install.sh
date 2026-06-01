@@ -45,7 +45,7 @@ cd $WORKDIR
 gunzip install.amd/initrd.gz
 cp /home/$USER/preseed.cfg .
 cp /home/$USER/$DAT ./install/make_vks.sh
-cp /home/$USER/overlay.py ./install
+cp /home/$USER/shared/overlay.py ./install
 cp /home/$USER/grub.cfg ./boot/grub/
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm preseed.cfg

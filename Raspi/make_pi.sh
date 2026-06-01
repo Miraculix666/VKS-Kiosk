@@ -81,6 +81,6 @@ runcmd:
 EOF
 chmod +x /mnt/firstrun.sh
 cp make_vks.sh /mnt
-cp overlay.py /mnt
+cp ../shared/overlay.py /mnt
 umount /mnt 2>&1
 echo "Done. SD-Karte ausgeworfen ..."
