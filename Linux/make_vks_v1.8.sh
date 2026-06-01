@@ -80,8 +80,9 @@ elif [ -z "\$PID" ]; then
         xdotool key --window "\$WIN_ID" F11
 	    ((TOKEN++))
 fi
-HDMI="\$(pactl list short sinks | awk '/hdmi/ {print \$2; exit}')"   
-ANALOG="\$(pactl list short sinks | awk '/analog/ {print \$2; exit}')"
+SINKS="\$(pactl list short sinks)"
+HDMI="\$(echo "\$SINKS" | awk '/hdmi/ {print \$2; exit}')"
+ANALOG="\$(echo "\$SINKS" | awk '/analog/ {print \$2; exit}')"
 CURRENT=\$(pactl get-default-sink 2>/dev/null)
 	if [ -n "\$HDMI" ]; then  
 		if [ "\$CURRENT" != "\$HDMI" ]; then
