@@ -1,5 +1,6 @@
 #!/bin/bash
 export PATH=$PATH:/usr/sbin/
+CURRDIR="$(dirname "$(readlink -f "$0")")"
 ############################################################################################################################
 #                                                                                                                          #
 #                                           		VKS-Futro Script                                                       #
@@ -37,16 +38,16 @@ if [ ! -f "$ISO" ]; then
 fi
 STICK=$(lsusb | grep -v "root hub")
 WORKDIR=/temp
-DAT=$(ls -c /home/$USER/make_vks* | head - n1)
+DAT=$(ls -c ${CURRDIR}/make_vks* | head - n1)
 rm -Rf $WORKDIR
 mkdir $WORKDIR
 7z x -o$WORKDIR $ISO
 cd $WORKDIR
 gunzip install.amd/initrd.gz
-cp /home/$USER/preseed.cfg .
-cp /home/$USER/$DAT ./install/make_vks.sh
-cp /home/$USER/overlay.py ./install
-cp /home/$USER/grub.cfg ./boot/grub/
+cp ${CURRDIR}/../shared/preseed.cfg .
+cp "$DAT" ./install/make_vks.sh
+cp ${CURRDIR}/../shared/overlay.py ./install
+cp ${CURRDIR}/../shared/grub.cfg ./boot/grub/
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm preseed.cfg
 gzip install.amd/initrd
