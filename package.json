@@ -2,6 +2,6 @@
   "name": "vks-kiosk",
   "version": "1.0.0",
   "description": "Securely locked-down Linux environment exclusively for VKS usage",
-  "author": "Antigravity AI",
+  "author": "VKS-Team",
   "license": "MIT"
 }

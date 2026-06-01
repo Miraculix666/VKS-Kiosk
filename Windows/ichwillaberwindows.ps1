@@ -148,7 +148,7 @@ if (-not $attached) {
     Write-Host "Moegliche Ursachen:" -ForegroundColor Yellow
     Write-Host "  - PowerShell laeuft NICHT als Administrator" -ForegroundColor Yellow
     Write-Host "  - Stick wird von Windows blockiert (Explorer, Antivirus, Laufwerksverschluesselung)" -ForegroundColor Yellow
-    Write-Host "Du kannst trotzdem in WSL weiterarbeiten, aber OHNE USB-Zugriff." -ForegroundColor DarkYellow
+    Write-Host "Es kann trotzdem in WSL weitergearbeitet werden, aber OHNE USB-Zugriff." -ForegroundColor DarkYellow
     Write-Host ""
 }
 
