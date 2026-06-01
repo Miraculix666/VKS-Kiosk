@@ -408,11 +408,18 @@ systemctl restart ssh
 swapoff -a
 grep -v swap /etc/fstab >/etc/fsnew
 mv /etc/fsnew /etc/fstab
-curl -L https://github.com/azlux/log2ram/archive/master.tar.gz | tar zxf -
-cd log2ram-master
+
+LOG2RAM_VER="1.7.2"
+LOG2RAM_SHA256="d8094f4c1e11e8efa2403128b4c47fa4cc2bf820c5222ee21c4eecf63471e5ad"
+curl -sL "https://github.com/azlux/log2ram/archive/refs/tags/${LOG2RAM_VER}.tar.gz" -o "log2ram.tar.gz"
+echo "${LOG2RAM_SHA256}  log2ram.tar.gz" | sha256sum -c - || exit 1
+
+tar zxf log2ram.tar.gz
+cd "log2ram-${LOG2RAM_VER}"
 chmod +x install.sh && ./install.sh
 cd ..
-rm -r log2ram-master
+rm -r "log2ram-${LOG2RAM_VER}"
+rm log2ram.tar.gz
 
 
 # tempfs für Verzeichnisse setzen
