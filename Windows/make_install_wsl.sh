@@ -21,6 +21,35 @@ echo "=========================================="
 echo ""
 
 # ============================================================
+# [0/4] Passwoerter abfragen
+# ============================================================
+echo "[0/4] Passwoerter für die VKS-Kiosk Installation festlegen"
+echo "Wenn du die Eingabe leer laesst, wird ein sicheres, zufaelliges Passwort generiert."
+echo ""
+
+read -r -s -p "  Root-Passwort (für Debug-Modus) eingeben: " INPUT_ROOT_PW
+echo ""
+if [ -z "$INPUT_ROOT_PW" ]; then
+    ROOT_PW="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12)"
+    echo "  -> Leere Eingabe. Generiertes Root-Passwort: $ROOT_PW"
+else
+    ROOT_PW="$INPUT_ROOT_PW"
+    echo "  -> Root-Passwort wurde gesetzt."
+fi
+echo ""
+
+read -r -s -p "  VKS-User-Passwort (vksuser) eingeben: " INPUT_USER_PW
+echo ""
+if [ -z "$INPUT_USER_PW" ]; then
+    USER_PW="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12)"
+    echo "  -> Leere Eingabe. Generiertes User-Passwort: $USER_PW"
+else
+    USER_PW="$INPUT_USER_PW"
+    echo "  -> User-Passwort wurde gesetzt."
+fi
+echo ""
+
+# ============================================================
 # [1/4] Abhaengigkeiten installieren
 # ============================================================
 echo "[1/4] Abhaengigkeiten pruefen und installieren ..."
@@ -105,6 +134,13 @@ echo "  Injiziere Kiosk-Skripte ..."
 # initrd patchen
 gunzip install.amd/initrd.gz
 cp "${CURRDIR}/preseed.cfg" .
+
+# Escape special characters for sed
+ESCAPED_ROOT_PW=$(printf '%s\n' "$ROOT_PW" | sed -e 's/[\/&]/\\&/g')
+ESCAPED_USER_PW=$(printf '%s\n' "$USER_PW" | sed -e 's/[\/&]/\\&/g')
+
+sed -i "s/ROOT_PASSWORD_PLACEHOLDER/$ESCAPED_ROOT_PW/g" ./preseed.cfg
+sed -i "s/USER_PASSWORD_PLACEHOLDER/$ESCAPED_USER_PW/g" ./preseed.cfg
 
 # Sicherstellen dass ./install ein Verzeichnis ist (in manchen ISO-Versionen heisst es anders)
 INSTALL_DIR=""
