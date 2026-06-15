@@ -146,7 +146,6 @@ systemctl enable apply_vlan.service
 sleep 2
 IFACE=$(ip -4 route ls default | grep -Po '(?<=dev )(\S+)')
 sleep 1
-#echo $IFACE >/root/iface.txt
 
 #          Netzwerkeinstellungen setzen und Firewall abdichten
 
