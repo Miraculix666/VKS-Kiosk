@@ -17,6 +17,8 @@ DEBIAN_ISO_URL=${DEBIAN_ISO_URL:-"https://cdimage.debian.org/debian-cd/current/a
 SCRIPT_VERSION=${SCRIPT_VERSION:-"2.0"}
 AUTO_WIPE_TARGET_DISK=${AUTO_WIPE_TARGET_DISK:-false}
 CLEANUP_PROMPT=${CLEANUP_PROMPT:-true}
+VKS_ROOT_PASSWORD=${VKS_ROOT_PASSWORD:-"mussuändern"}
+VKS_USER_PASSWORD=${VKS_USER_PASSWORD:-"vksuser"}
 
 install_dependencies() {
     echo "=========================================="
@@ -133,6 +135,18 @@ build_iso() {
         sed -i 's/^d-i partman\/confirm/#d-i partman\/confirm/' preseed.cfg
         sed -i 's/^d-i partman\/confirm_nooverwrite/#d-i partman\/confirm_nooverwrite/' preseed.cfg
     fi
+
+    # Passwoerter hashen und in preseed.cfg injizieren
+    echo "  Passe Passwoerter in preseed.cfg an..."
+    HASHED_ROOT_PW=$(echo "$VKS_ROOT_PASSWORD" | openssl passwd -6 -stdin)
+    HASHED_USER_PW=$(echo "$VKS_USER_PASSWORD" | openssl passwd -6 -stdin)
+
+    # Escape füt sed
+    ESCAPED_ROOT_PW=$(printf '%s\n' "$HASHED_ROOT_PW" | sed -e 's/[\/&]/\\&/g')
+    ESCAPED_USER_PW=$(printf '%s\n' "$HASHED_USER_PW" | sed -e 's/[\/&]/\\&/g')
+
+    sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_PW/" preseed.cfg
+    sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_PW/" preseed.cfg
 
     echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
     rm -f preseed.cfg
