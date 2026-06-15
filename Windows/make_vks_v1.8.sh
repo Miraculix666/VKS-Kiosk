@@ -402,7 +402,8 @@ cp /root/make_vks.sh /scripts
 printf "Scriptversion - ">/scripts/version.txt
 printf $(grep "# Version" /scripts/make_vks.sh | grep -v printf | tail -n 1 | cut -d ' ' -f3)>>/scripts/version.txt
 apt clean
-chmod 000 /usr/bin/apt
-chmod 000 /usr/bin/apt-get
+systemctl disable apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true
+apt-mark hold $(dpkg-query -W -f='${binary:Package}\n') > /dev/null
+
 
 /sbin/init 6
