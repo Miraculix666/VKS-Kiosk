@@ -403,7 +403,6 @@ cp /root/make_vks.sh /scripts
 printf "Scriptversion - ">/scripts/version.txt
 printf $(grep "# Version" /scripts/make_vks.sh | grep -v printf | tail -n 1 | cut -d ' ' -f3)>>/scripts/version.txt
 apt clean
-chmod 000 /usr/bin/apt
-chmod 000 /usr/bin/apt-get
+dpkg-query -W -f='${Package}\n' | xargs apt-mark hold > /dev/null 2>&1
 
 /sbin/init 6
