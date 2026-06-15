@@ -37,7 +37,7 @@ export PATH=$PATH:/usr/sbin/
 #          Installation Grundsystem, benötigte Dienste und Browser
 
 apt update && apt upgrade -y
-apt install net-tools xdotool lldpd snmpd curl gnupg ca-certificates original-awk nftables isc-dhcp-client rsync chromium python3 python3-tk -y
+apt install net-tools xdotool lldpd snmpd curl gnupg ca-certificates original-awk nftables isc-dhcp-client rsync chromium python3 python3-tk gnome-keyring -y
 
 LOGINUSER=$(ls /home | grep -v root)
 mkdir -p /scripts
@@ -56,7 +56,7 @@ xset s off &
 xset s noblank &
 xset -dpms &
 sleep 5
-/usr/bin/chromium --kiosk "https://join.hipos-vks.polizei.nrw" --password-store=basic &
+/usr/bin/chromium --kiosk "https://join.hipos-vks.polizei.nrw" --password-store=gnome &
 sleep 5
 TOKEN=0
 while true; do
@@ -70,7 +70,7 @@ if [ -n "\$PID" ]; then
 	    ((TOKEN++))
 	fi
 elif [ -z "\$PID" ]; then
-	    /usr/bin/chromium --kiosk "https://join.hipos-vks.polizei.nrw" --password-store=basic &
+	    /usr/bin/chromium --kiosk "https://join.hipos-vks.polizei.nrw" --password-store=gnome &
 	    PID=\$(pgrep -f "chromium")
 	    WIN_ID=\$(xdotool search --pid "\$PID" 2>/dev/null | head -n 1)
 	    xdotool windowactivate "\$WIN_ID"
