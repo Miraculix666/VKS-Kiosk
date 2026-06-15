@@ -435,8 +435,11 @@ cp ./make_vks.sh /scripts
 printf "Scriptversion - ">/scripts/version.txt
 printf $(grep "# Version" /scripts/make_vks.sh | grep -v printf | tail -n 1 | cut -d ' ' -f3)>>/scripts/version.txt
 apt clean
-chmod 000 /usr/bin/apt
-chmod 000 /usr/bin/apt-get
+systemctl disable apt-daily.timer apt-daily-upgrade.timer
+cat <<'INNEREOF' > /etc/apt/apt.conf.d/20auto-upgrades
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Unattended-Upgrade "0";
+INNEREOF
 
 systemctl disable make_vks.service
 rm -f /etc/systemd/system/make_vks.service
