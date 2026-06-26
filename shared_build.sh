@@ -24,14 +24,14 @@ install_dependencies() {
     echo "=========================================="
     if command -v apt-get >/dev/null 2>&1; then
         apt-get update -qq || true
-        apt-get install -y syslinux syslinux-utils cpio coreutils usbutils xorriso p7zip-full wget whiptail dialog 2>&1 | \
+        apt-get install -y openssl syslinux syslinux-utils cpio coreutils usbutils xorriso p7zip-full wget whiptail dialog 2>&1 | \
             grep -v "already the newest" | grep -v "^$" || true
     elif command -v dnf >/dev/null 2>&1; then
-        dnf install -y syslinux syslinux-nonlinux cpio coreutils usbutils xorriso p7zip p7zip-plugins wget newt dialog || true
+        dnf install -y openssl syslinux syslinux-nonlinux cpio coreutils usbutils xorriso p7zip p7zip-plugins wget newt dialog || true
     elif command -v zypper >/dev/null 2>&1; then
-        zypper install -y syslinux cpio coreutils usbutils xorriso p7zip wget newt dialog || true
+        zypper install -y openssl syslinux cpio coreutils usbutils xorriso p7zip wget newt dialog || true
     elif command -v pacman >/dev/null 2>&1; then
-        pacman -Sy --noconfirm syslinux cpio coreutils usbutils xorriso p7zip wget libnewt dialog || true
+        pacman -Sy --noconfirm openssl syslinux cpio coreutils usbutils xorriso p7zip wget libnewt dialog || true
     else
         echo "FEHLER: Kein unterstuetzter Paketmanager (apt, dnf, zypper, pacman) gefunden."
         echo "Bitte installieren Sie die Abhaengigkeiten manuell."
@@ -107,6 +107,19 @@ build_iso() {
     echo "  Injiziere Kiosk-Skripte ..."
     gunzip install.amd/initrd.gz
     cp "${CURRDIR}/preseed.cfg" .
+
+    # Inject hashed passwords into preseed.cfg
+    echo "  Generiere sichere Passwort-Hashes fuer preseed.cfg..."
+    V_ROOT_PW="${VKS_ROOT_PASSWORD:-mussuändern}"
+    V_USER_PW="${VKS_USER_PASSWORD:-vksuser}"
+    ROOT_HASH="$(echo "$V_ROOT_PW" | openssl passwd -6 -stdin)"
+    USER_HASH="$(echo "$V_USER_PW" | openssl passwd -6 -stdin)"
+    ESCAPED_ROOT_HASH="$(printf '%s
+' "$ROOT_HASH" | sed -e 's/[\/&]/\&/g')"
+    ESCAPED_USER_HASH="$(printf '%s
+' "$USER_HASH" | sed -e 's/[\/&]/\&/g')"
+    sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_HASH/g" preseed.cfg
+    sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_HASH/g" preseed.cfg
 
     INSTALL_DIR=""
     for d in install install.amd; do
