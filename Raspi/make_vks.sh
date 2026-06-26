@@ -396,7 +396,6 @@ update-initramfs -u
 
 
 sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
-sed -i 's/^#\?PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
 echo "MaxAuthTries 3" >> /etc/ssh/sshd_config
 echo "LoginGraceTime 30" >> /etc/ssh/sshd_config
 systemctl restart ssh
