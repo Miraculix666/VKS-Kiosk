@@ -7,7 +7,7 @@ def read_text():
     try:
         with open(TEXT_FILE) as f:
             return f.read().strip()
-    except:
+    except Exception:
         return "keine Datei"
 def update():
     label.config(text=read_text())
