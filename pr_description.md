@@ -1,0 +1,4 @@
+🎯 **What:** Wrapped the main execution block of `Linux/overlay.py` inside an `if __name__ == '__main__':` guard.
+💡 **Why:** This improves the script's maintainability and reusability as a module. It ensures the script runs normally when executed directly but safely prevents the Tkinter UI from inadvertently launching and blocking execution if imported by another Python module (e.g., during testing). This aligns the Linux script with the existing Windows and Raspi implementations.
+✅ **Verification:** Verified the completeness of the change and syntax using `python3 -m py_compile Linux/overlay.py`. Temporarily wrote and executed unit tests for reading the text file to confirm that no logic was broken by the change. Tests passed successfully.
+✨ **Result:** A safer, more modular script that can be easily imported into other Python modules without side effects.
