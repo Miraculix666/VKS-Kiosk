@@ -1,19 +1,22 @@
 import unittest
 from unittest.mock import mock_open, patch
+import sys
 import os
 
-from Windows.overlay import read_text
+sys.path.insert(0, os.path.dirname(__file__))
+
+import overlay
 
 class TestOverlay(unittest.TestCase):
     @patch("builtins.open", new_callable=mock_open, read_data="v1.2.3\n")
     def test_read_text_success(self, mock_file):
-        result = read_text()
+        result = overlay.read_text()
         self.assertEqual(result, "v1.2.3")
         mock_file.assert_called_once_with("/scripts/version.txt")
 
     @patch("builtins.open", side_effect=FileNotFoundError)
     def test_read_text_exception(self, mock_file):
-        result = read_text()
+        result = overlay.read_text()
         self.assertEqual(result, "keine Datei")
         mock_file.assert_called_once_with("/scripts/version.txt")
 
