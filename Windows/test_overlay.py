@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import mock_open, patch
-import os
 
 from Windows.overlay import read_text
 
