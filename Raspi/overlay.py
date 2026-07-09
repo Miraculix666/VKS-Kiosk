@@ -15,7 +15,7 @@ def read_text():
             with open(TEXT_FILE) as f:
                 cached_text = f.read().strip()
             last_mtime = current_mtime
-    except:
+    except Exception:
         cached_text = "keine Datei"
         last_mtime = None
     return cached_text
