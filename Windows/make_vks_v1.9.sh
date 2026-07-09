@@ -451,11 +451,10 @@ systemctl restart ssh
 swapoff -a
 grep -v swap /etc/fstab >/etc/fsnew
 mv /etc/fsnew /etc/fstab
-curl -L https://github.com/azlux/log2ram/archive/master.tar.gz | tar zxf -
-cd log2ram-master
-chmod +x install.sh && ./install.sh
-cd ..
-rm -r log2ram-master
+wget -qO /usr/share/keyrings/azlux-archive-keyring.gpg https://azlux.fr/repo.gpg
+echo "deb [signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian/ bookworm main" | tee /etc/apt/sources.list.d/azlux.list
+apt-get update
+apt-get install -y log2ram
 
 
 # tempfs für Verzeichnisse setzen
