@@ -70,7 +70,7 @@ ANALOG="\$(pactl list short sinks | awk '/analog/ {print \$2; exit}')"
 DP="\$(pactl list short sinks | awk '/dsp_generic.HiFi__Speaker/ {print \$2; exit}')"
 while true; do
 PID=\$(pgrep -f "vivaldi-stable|vivaldi")
-WIN_ID=\$(xdotool search --pid "$PID" 2>/dev/null | head -n 1)
+WIN_ID=\$(xdotool search --pid "\$PID" 2>/dev/null | head -n 1)
 if [ -n "\$PID" ]; then
     if [ "\$TOKEN" -eq 0 ]; then
 	    xdotool windowactivate "\$WIN_ID"
