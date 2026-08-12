@@ -66,9 +66,10 @@ rm -Rf /home/vksuser/.config/vivaldi/Default/Sessions/*
 /usr/bin/vivaldi-stable --app=https://join.hipos-vks.polizei.nrw --kiosk --incognito --use-fake-ui-for-media-stream --autoplay-policy=no-user-gesture-required --check-for-update-interval=31536000 --enable-gpu --ignore-gpu-blocklist --gpu-rasterization --enable-oop-rasterization --no-first-run &
 sleep 5
 TOKEN=0
-HDMI="\$(pactl list short sinks | awk '/hdmi/ {print \$2; exit}')"
-ANALOG="\$(pactl list short sinks | awk '/analog/ {print \$2; exit}')"
-DP="\$(pactl list short sinks | awk '/dsp_generic.HiFi__Speaker/ {print \$2; exit}')"
+ALL_SINKS="\$(pactl list short sinks 2>/dev/null)"
+HDMI="\$(echo "\$ALL_SINKS" | awk '/hdmi/ {print \$2; exit}')"
+ANALOG="\$(echo "\$ALL_SINKS" | awk '/analog/ {print \$2; exit}')"
+DP="\$(echo "\$ALL_SINKS" | awk '/dsp_generic.HiFi__Speaker/ {print \$2; exit}')"
 while true; do
 PID=\$(pgrep -f "vivaldi-stable|vivaldi")
 WIN_ID=\$(xdotool search --pid "\$PID" 2>/dev/null | head -n 1)
@@ -90,10 +91,6 @@ elif [ -z "\$PID" ]; then
         xdotool key --window "\$WIN_ID" F11
 	    ((TOKEN++))
 fi
-SINKS="\$(pactl list short sinks)"
-HDMI="\$(echo "\$SINKS" | awk '/hdmi/ {print \$2; exit}')"
-ANALOG="\$(echo "\$SINKS" | awk '/analog/ {print \$2; exit}')"
-DP="\$(echo "\$SINKS" | awk '/dsp_generic.HiFi__Speaker/ {print \$2; exit}')"
 CURRENT=\$(pactl get-default-sink 2>/dev/null)
 	if [ -n "\$HDMI" ]; then  
 		if [ "\$CURRENT" != "\$HDMI" ]; then
