@@ -7,13 +7,14 @@ def read_text():
     try:
         with open(TEXT_FILE) as f:
             return f.read().strip()
-    except Exception:
+    except (OSError, FileNotFoundError):
         return "keine Datei"
 def update():
     label.config(text=read_text())
     root.after(REFRESH_MS, update)
+
 def main():
-    global root, label
+    global label, root
     if os.environ.get('DISPLAY','') == '':
         print('no display found. Using :0.0')
         os.environ.__setitem__('DISPLAY', ':0.0')
