@@ -9,7 +9,4 @@ node_modules/
 
 # Ignore massive ISO binaries
 *.iso
-
-# Python caching
 __pycache__/
-*.pyc
