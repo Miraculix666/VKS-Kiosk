@@ -136,17 +136,18 @@ build_iso() {
         sed -i 's/^d-i partman\/confirm_nooverwrite/#d-i partman\/confirm_nooverwrite/' preseed.cfg
     fi
 
-    echo "  Injiziere Passwoerter in preseed.cfg ..."
-    ROOT_PW="${VKS_ROOT_PASSWORD:-mussuändern}"
-    USER_PW="${VKS_USER_PASSWORD:-vksuser}"
-    ROOT_PW_HASH=$(openssl passwd -6 "$ROOT_PW")
-    USER_PW_HASH=$(openssl passwd -6 "$USER_PW")
+    echo "  Injiziere Passwörter in preseed.cfg..."
+    if [ -n "$VKS_ROOT_PASSWORD" ]; then
+        ROOT_HASH=$(openssl passwd -6 "$VKS_ROOT_PASSWORD")
+        ESCAPED_ROOT_HASH=$(printf '%s\n' "$ROOT_HASH" | sed -e 's/[\/&]/\\&/g')
+        sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_HASH/g" preseed.cfg
+    fi
 
-    ESCAPED_ROOT_PW_HASH=$(printf '%s\n' "$ROOT_PW_HASH" | sed -e 's/[\/&]/\\&/g')
-    ESCAPED_USER_PW_HASH=$(printf '%s\n' "$USER_PW_HASH" | sed -e 's/[\/&]/\\&/g')
-
-    sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_PW_HASH/g" preseed.cfg
-    sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_PW_HASH/g" preseed.cfg
+    if [ -n "$VKS_USER_PASSWORD" ]; then
+        USER_HASH=$(openssl passwd -6 "$VKS_USER_PASSWORD")
+        ESCAPED_USER_HASH=$(printf '%s\n' "$USER_HASH" | sed -e 's/[\/&]/\\&/g')
+        sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_HASH/g" preseed.cfg
+    fi
 
     echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
     rm -f preseed.cfg

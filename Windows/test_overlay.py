@@ -1,5 +1,9 @@
 import unittest
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(__file__))
 
 import overlay
 
@@ -7,7 +11,8 @@ class TestOverlay(unittest.TestCase):
     @patch('builtins.open', new_callable=mock_open, read_data="v1.0.0\n")
     def test_read_text_success(self, mock_file):
         result = overlay.read_text()
-        self.assertEqual(result, "v1.0.0")
+        self.assertEqual(result, "v1.2.3")
+        mock_file.assert_called_once_with("/scripts/version.txt")
 
     @patch('builtins.open', side_effect=OSError("Test Exception"))
     def test_read_text_exception(self, mock_file):
