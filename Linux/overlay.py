@@ -11,9 +11,8 @@ def read_text():
         return "keine Datei"
 def update(root, label):
     label.config(text=read_text())
-    root.after(REFRESH_MS, update, root, label)
-
-def main():
+    root.after(REFRESH_MS, update)
+if __name__ == '__main__':
     if os.environ.get('DISPLAY','') == '':
         print('no display found. Using :0.0')
         os.environ.__setitem__('DISPLAY', ':0.0')
@@ -37,8 +36,5 @@ def main():
     x = screen_width - 95
     y = 0
     root.geometry(f"+{x}+{y}")
-    update(root, label)
+    update()
     root.mainloop()
-
-if __name__ == "__main__":
-    main()
