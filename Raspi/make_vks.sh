@@ -225,12 +225,10 @@ export PATH=\$PATH:/usr/sbin/
 LAST=""
 IF=""
 while true; do
-IFACE=\$(ip -4 route ls default | grep -Po '(?<=dev )(\S+)' | head -n1)
-echo \$IFACE>/root/iface.txt
-IF=\$(cat /root/iface.txt)
+	IF=\$(ip -4 route ls default | grep -Po '(?<=dev )(\S+)')
+	VOICE=\$(/usr/sbin/lldpcli show neighbors details | grep -A1 "Voice," | grep VLAN | cut -d':' -f2 | sed -e 's/^[ \t]*//;s/[ \t]*$//')
 for i in \$(seq 1 11)
 	do
-		VOICE=\$(/usr/sbin/lldpcli show neighbors details | grep -A1 "Voice," | grep VLAN | cut -d':' -f2 | sed -e 's/^[ \t]*//;s/[ \t]*$//')
 		if [ "\$VOICE" != "\$LAST" ] && [ -n "\$VOICE" ]; then
 			if ip route | grep -q default; then
 				ip route del default
