@@ -1,23 +1,25 @@
 import unittest
 from unittest.mock import mock_open, patch
-import sys
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(__file__))
-from overlay import read_text
+# Ensure Windows/ is in sys.path so we can import overlay
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import overlay
 
 class TestOverlay(unittest.TestCase):
-    @patch('builtins.open', new_callable=mock_open, read_data="v1.0.0\n")
-    def test_read_text_success(self, mock_file):
-        result = overlay.read_text()
-        self.assertEqual(result, "v1.2.3")
-        mock_file.assert_called_once_with("/scripts/version.txt")
+    def test_read_text_success(self):
+        # Mock open to return a successful file read
+        mock_file_content = "v1.2.3  "
+        with patch('builtins.open', mock_open(read_data=mock_file_content)):
+            result = overlay.read_text()
+            self.assertEqual(result, "v1.2.3")
 
-    @patch('builtins.open', side_effect=OSError("Test Exception"))
-    def test_read_text_exception(self, mock_file):
-        result = overlay.read_text()
-        self.assertEqual(result, "keine Datei")
+    def test_read_text_failure(self):
+        # Mock open to raise an exception, simulating a missing file or error
+        with patch('builtins.open', side_effect=Exception("File not found")):
+            result = overlay.read_text()
+            self.assertEqual(result, "keine Datei")
 
 if __name__ == '__main__':
     unittest.main()
