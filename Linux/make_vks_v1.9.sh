@@ -457,11 +457,23 @@ systemctl restart ssh
 swapoff -a
 grep -v swap /etc/fstab >/etc/fsnew
 mv /etc/fsnew /etc/fstab
-curl -L https://github.com/azlux/log2ram/archive/master.tar.gz | tar zxf -
-cd log2ram-master
-chmod 750 install.sh && ./install.sh
+
+LOG2RAM_VERSION="1.7.2"
+LOG2RAM_URL="https://github.com/azlux/log2ram/archive/refs/tags/${LOG2RAM_VERSION}.tar.gz"
+LOG2RAM_SHA256="d8094f4c1e11e8efa2403128b4c47fa4cc2bf820c5222ee21c4eecf63471e5ad"
+TARBALL="log2ram-${LOG2RAM_VERSION}.tar.gz"
+
+curl -sL "${LOG2RAM_URL}" -o "${TARBALL}"
+if ! echo "${LOG2RAM_SHA256}  ${TARBALL}" | sha256sum -c - >/dev/null 2>&1; then
+    echo "ERROR: Checksum verification failed for ${TARBALL}!"
+    exit 1
+fi
+
+tar zxf "${TARBALL}"
+cd "log2ram-${LOG2RAM_VERSION}"
+chmod +x install.sh && ./install.sh
 cd ..
-rm -r log2ram-master
+rm -r "log2ram-${LOG2RAM_VERSION}" "${TARBALL}"
 
 
 # tempfs für Verzeichnisse setzen
