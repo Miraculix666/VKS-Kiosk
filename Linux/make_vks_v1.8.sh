@@ -221,11 +221,11 @@ cat <<EOF | tee /scripts/apply-lldp-vlan.sh
 export PATH=\$PATH:/usr/sbin/
 LAST=""
 while true; do
+IFACE=\$(ip -4 route ls default | grep -Po '(?<=dev )(\S+)' | head -n1)
+echo \$IFACE>/root/iface.txt
+IF=\$(cat /root/iface.txt)
 for i in \$(seq 1 11)
 	do
-		IFACE=\$(ip -4 route ls default | grep -Po '(?<=dev )(\S+)')
-
-		IF="\$IFACE"
 		VOICE=\$(/usr/sbin/lldpcli show neighbors details | grep -A1 "Voice," | grep VLAN | cut -d':' -f2 | sed -e 's/^[ \t]*//;s/[ \t]*$//')
 		if [ "\$VOICE" != "\$LAST" ] && [ -n "\$VOICE" ]; then
 			ip route del default    	
