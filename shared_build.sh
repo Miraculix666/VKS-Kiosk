@@ -110,6 +110,38 @@ build_iso() {
     gunzip install.amd/initrd.gz
     cp "${CURRDIR}/preseed.cfg" .
 
+    # Passwoerter auslesen oder abfragen, hashen und in preseed.cfg injizieren
+    if [ -z "${VKS_ROOT_PASSWORD:-}" ]; then
+        if [ -t 0 ]; then
+            read -s -p "  Bitte Root-Passwort eingeben (oder Leer lassen für Zufallspasswort): " VKS_ROOT_PASSWORD
+            echo ""
+        fi
+        if [ -z "${VKS_ROOT_PASSWORD:-}" ]; then
+            VKS_ROOT_PASSWORD=$(openssl rand -base64 12)
+            echo "  Generiertes Root-Passwort: $VKS_ROOT_PASSWORD"
+        fi
+    fi
+
+    if [ -z "${VKS_USER_PASSWORD:-}" ]; then
+        if [ -t 0 ]; then
+            read -s -p "  Bitte User-Passwort eingeben (oder Leer lassen für Zufallspasswort): " VKS_USER_PASSWORD
+            echo ""
+        fi
+        if [ -z "${VKS_USER_PASSWORD:-}" ]; then
+            VKS_USER_PASSWORD=$(openssl rand -base64 12)
+            echo "  Generiertes User-Passwort: $VKS_USER_PASSWORD"
+        fi
+    fi
+
+    ROOT_PW_HASH=$(openssl passwd -6 "$VKS_ROOT_PASSWORD")
+    USER_PW_HASH=$(openssl passwd -6 "$VKS_USER_PASSWORD")
+
+    ESCAPED_ROOT_PW=$(printf '%s\n' "$ROOT_PW_HASH" | sed -e 's/[\/&]/\\&/g')
+    ESCAPED_USER_PW=$(printf '%s\n' "$USER_PW_HASH" | sed -e 's/[\/&]/\\&/g')
+
+    sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_PW/" preseed.cfg
+    sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_PW/" preseed.cfg
+
     INSTALL_DIR=""
     for d in install install.amd; do
         if [ -d "${WORKDIR}/${d}" ]; then
