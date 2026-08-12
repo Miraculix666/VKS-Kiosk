@@ -10,4 +10,3 @@ node_modules/
 # Ignore massive ISO binaries
 *.iso
 __pycache__/
-*.pyc
