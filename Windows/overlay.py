@@ -12,7 +12,8 @@ def read_text():
 def update():
     label.config(text=read_text())
     root.after(REFRESH_MS, update)
-if __name__ == '__main__':
+def main():
+    global root, label
     if os.environ.get('DISPLAY','') == '':
         print('no display found. Using :0.0')
         os.environ.__setitem__('DISPLAY', ':0.0')
@@ -38,3 +39,6 @@ if __name__ == '__main__':
     root.geometry(f"+{x}+{y}")
     update()
     root.mainloop()
+
+if __name__ == '__main__':
+    main()
