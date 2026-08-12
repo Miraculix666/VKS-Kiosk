@@ -81,28 +81,20 @@ elif [ -z "\$PID" ]; then
         xdotool key --window "\$WIN_ID" F11
 	    ((TOKEN++))
 fi
-SINKS="\$(pactl list short sinks)"
-HDMI="\$(echo "\$SINKS" | awk '/hdmi/ {print \$2; exit}')"
-ANALOG="\$(echo "\$SINKS" | awk '/analog/ {print \$2; exit}')"
-DP="\$(echo "\$SINKS" | awk '/dsp_generic.HiFi__Speaker/ {print \$2; exit}')"
+TARGET="\$(pactl list short sinks | awk '
+/hdmi/ && !hdmi { hdmi=\$2 }
+/analog/ && !analog { analog=\$2 }
+/dsp_generic.HiFi__Speaker/ && !dp { dp=\$2 }
+END {
+    if (hdmi) print hdmi
+    else if (analog) print analog
+    else if (dp) print dp
+}')"
 CURRENT=\$(pactl get-default-sink 2>/dev/null)
-	if [ -n "\$HDMI" ]; then  
-		if [ "\$CURRENT" != "\$HDMI" ]; then
-    		pactl set-default-sink "\$HDMI"
-    		pactl move-sink-input @DEFAULT_SINK@ "\$HDMI" 2>/dev/null
-  		fi
-	elif [ -n "\$ANALOG" ]; then
-		 if [ "\$CURRENT" != "\$ANALOG" ]; then
-
-			pactl set-default-sink "\$ANALOG"
-            pactl move-sink-input @DEFAULT_SINK@ "\$ANALOG" 2>/dev/null
-		fi
-	elif [ -n "\$DP" ]; then
-        if [ "\$CURRENT" != "\$DP" ]; then
-			pactl set-default-sink "\$DP"
-            pactl move-sink-input @DEFAULT_SINK@ "\$DP" 2>/dev/null
-        fi
-	fi
+if [ -n "\$TARGET" ] && [ "\$CURRENT" != "\$TARGET" ]; then
+    pactl set-default-sink "\$TARGET"
+    pactl move-sink-input @DEFAULT_SINK@ "\$TARGET" 2>/dev/null
+fi
   sleep 2
 ((TOKEN++))
 done
