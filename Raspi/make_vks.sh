@@ -408,21 +408,17 @@ swapoff -a
 grep -v swap /etc/fstab >/etc/fsnew
 mv /etc/fsnew /etc/fstab
 
-LOG2RAM_VERSION="1.7.2"
-LOG2RAM_TAR="log2ram-${LOG2RAM_VERSION}.tar.gz"
+LOG2RAM_VER="1.7.2"
 LOG2RAM_SHA256="d8094f4c1e11e8efa2403128b4c47fa4cc2bf820c5222ee21c4eecf63471e5ad"
+curl -sL "https://github.com/azlux/log2ram/archive/refs/tags/${LOG2RAM_VER}.tar.gz" -o "log2ram.tar.gz"
+echo "${LOG2RAM_SHA256}  log2ram.tar.gz" | sha256sum -c - || exit 1
 
-curl -L -s "https://github.com/azlux/log2ram/archive/refs/tags/${LOG2RAM_VERSION}.tar.gz" -o "${LOG2RAM_TAR}"
-if ! echo "${LOG2RAM_SHA256}  ${LOG2RAM_TAR}" | sha256sum -c - >/dev/null 2>&1; then
-    echo "Error: log2ram checksum verification failed"
-    exit 1
-fi
-tar zxf "${LOG2RAM_TAR}"
-rm "${LOG2RAM_TAR}"
-cd "log2ram-${LOG2RAM_VERSION}"
+tar zxf log2ram.tar.gz
+cd "log2ram-${LOG2RAM_VER}"
 chmod +x install.sh && ./install.sh
 cd ..
-rm -r "log2ram-${LOG2RAM_VERSION}"
+rm -r "log2ram-${LOG2RAM_VER}"
+rm log2ram.tar.gz
 
 
 # tempfs für Verzeichnisse setzen
