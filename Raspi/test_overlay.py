@@ -1,31 +1,23 @@
 import unittest
-from unittest.mock import patch, mock_open
-import sys
-import os
-
-sys.path.insert(0, os.path.dirname(__file__))
-
-import overlay
+from unittest.mock import mock_open, patch
+import Raspi.overlay as overlay
 
 class TestOverlay(unittest.TestCase):
-    def setUp(self):
-        overlay.last_mtime = None
-        overlay.cached_text = "keine Datei"
 
-    @patch('builtins.open', new_callable=mock_open, read_data='1.0.0\n')
-    @patch('os.path.getmtime', return_value=12345.0)
-    def test_read_text_success(self, mock_getmtime, mock_file):
-        """Test read_text when the file exists and contains text."""
+    @patch('builtins.open', new_callable=mock_open, read_data="v1.0.0")
+    def test_read_text_success(self, mock_file):
+        """Test read_text when the file exists and can be read successfully."""
         result = overlay.read_text()
-        self.assertEqual(result, '1.0.0')
+        self.assertEqual(result, "v1.0.0")
         mock_file.assert_called_once_with(overlay.TEXT_FILE)
 
-    @patch('os.path.getmtime', side_effect=FileNotFoundError)
-    def test_read_text_file_not_found(self, mock_getmtime):
-        """Test read_text when the file does not exist."""
+    @patch('builtins.open')
+    def test_read_text_error(self, mock_file):
+        """Test read_text when an IOError occurs (e.g., file not found)."""
+        mock_file.side_effect = IOError("File not found")
         result = overlay.read_text()
-        self.assertEqual(result, 'keine Datei')
-        mock_getmtime.assert_called_once_with(overlay.TEXT_FILE)
+        self.assertEqual(result, "keine Datei")
+        mock_file.assert_called_once_with(overlay.TEXT_FILE)
 
 if __name__ == '__main__':
     unittest.main()
