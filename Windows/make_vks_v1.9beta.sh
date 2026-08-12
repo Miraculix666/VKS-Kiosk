@@ -507,10 +507,8 @@ cp /root/make_vks.sh /scripts
 printf "Scriptversion - ">/scripts/version.txt
 printf $(grep "# Version" /scripts/make_vks.sh | grep -v printf | tail -n 1 | cut -d ' ' -f3)>>/scripts/version.txt
 apt clean
-systemctl disable apt-daily.timer apt-daily-upgrade.timer
-cat <<'INNEREOF' > /etc/apt/apt.conf.d/20auto-upgrades
-APT::Periodic::Update-Package-Lists "0";
-APT::Periodic::Unattended-Upgrade "0";
-INNEREOF
+systemctl disable apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true
+apt-mark hold $(dpkg-query -W -f='${binary:Package}\n') > /dev/null
+
 
 /sbin/init 6
