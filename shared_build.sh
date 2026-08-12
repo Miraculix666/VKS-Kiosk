@@ -110,25 +110,18 @@ build_iso() {
     gunzip install.amd/initrd.gz
     cp "${CURRDIR}/preseed.cfg" .
 
-    # Passwörter injizieren (sicher über Hashes statt Klartext)
+    # Inject hashed passwords into preseed.cfg
     ROOT_PW="${VKS_ROOT_PASSWORD:-mussuändern}"
     USER_PW="${VKS_USER_PASSWORD:-vksuser}"
+    ROOT_HASH="$(openssl passwd -6 "$ROOT_PW")"
+    USER_HASH="$(openssl passwd -6 "$USER_PW")"
 
-    if command -v openssl >/dev/null 2>&1; then
-        ROOT_HASH=$(openssl passwd -6 "$ROOT_PW")
-        USER_HASH=$(openssl passwd -6 "$USER_PW")
-    else
-        ROOT_HASH=$(python3 -c 'import crypt, sys; print(crypt.crypt(sys.argv[1], crypt.mksalt(crypt.METHOD_SHA512)))' "$ROOT_PW")
-        USER_HASH=$(python3 -c 'import crypt, sys; print(crypt.crypt(sys.argv[1], crypt.mksalt(crypt.METHOD_SHA512)))' "$USER_PW")
-    fi
-
-    # Sonderzeichen für sed escapen (insb. / und &)
+    # Escape hashes for sed (in case they contain slashes or ampersands)
     ESCAPED_ROOT_HASH=$(printf '%s\n' "$ROOT_HASH" | sed -e 's/[\/&]/\\&/g')
     ESCAPED_USER_HASH=$(printf '%s\n' "$USER_HASH" | sed -e 's/[\/&]/\\&/g')
 
-    echo "  Passe preseed.cfg an (Passwörter setzen)..."
-    sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_HASH/" preseed.cfg
-    sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_HASH/" preseed.cfg
+    sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_HASH/g" preseed.cfg
+    sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_HASH/g" preseed.cfg
 
     INSTALL_DIR=""
     for d in install install.amd; do
