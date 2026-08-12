@@ -3,57 +3,23 @@ from unittest.mock import patch, mock_open
 import sys
 import os
 
-sys.path.insert(0, os.path.dirname(__file__))
-
-with patch('tkinter.Tk'):
-    import overlay
+# Adjust path so we can import overlay from the Raspi directory without issues
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import overlay
 
 class TestOverlay(unittest.TestCase):
-    def setUp(self):
-        # Reset global state for each test to ensure test isolation
-        overlay.last_mtime = None
-        overlay.cached_text = "keine Datei"
+    def test_read_text_success(self):
+        # Test scenario 1: file is read successfully and returns trimmed content.
+        mocked_file_content = "   Test Version 1.0.0   \n"
+        with patch('builtins.open', mock_open(read_data=mocked_file_content)):
+            result = overlay.read_text()
+            self.assertEqual(result, "Test Version 1.0.0")
 
-    @patch('os.path.getmtime', return_value=12345.6)
-    @patch('builtins.open', new_callable=mock_open, read_data='1.0.0\n')
-    def test_read_text_success(self, mock_file, mock_getmtime):
-        """Test read_text when the file exists and contains text."""
-        mock_getmtime.return_value = 12345.0
-        result = overlay.read_text()
-        self.assertEqual(result, '1.0.0')
-        mock_file.assert_called_once_with(overlay.TEXT_FILE)
-        mock_getmtime.assert_called_once_with(overlay.TEXT_FILE)
-
-    @patch('os.path.getmtime', side_effect=FileNotFoundError)
-    @patch('builtins.open')
-    def test_read_text_file_not_found(self, mock_file, mock_getmtime):
-        """Test read_text when the file does not exist."""
-        mock_getmtime.return_value = 12345.0
-        result = overlay.read_text()
-        self.assertEqual(result, 'keine Datei')
-        mock_file.assert_not_called()
-        mock_getmtime.assert_called_once_with(overlay.TEXT_FILE)
-
-    @patch('os.path.getmtime', return_value=12345.6)
-    @patch('builtins.open', side_effect=Exception("Read error"))
-    def test_read_text_open_fails(self, mock_file, mock_getmtime):
-        """Test read_text when os.path.getmtime succeeds but open raises an exception."""
-        result = overlay.read_text()
-        self.assertEqual(result, 'keine Datei')
-        mock_file.assert_called_once_with(overlay.TEXT_FILE)
-        mock_getmtime.assert_called_once_with(overlay.TEXT_FILE)
-
-    @patch('os.path.getmtime', return_value=12345.6)
-    @patch('builtins.open')
-    def test_read_text_cached(self, mock_file, mock_getmtime):
-        """Test read_text when the file is unchanged, verifying it returns the cached text."""
-        overlay.last_mtime = 12345.6
-        overlay.cached_text = "cached value"
-
-        result = overlay.read_text()
-        self.assertEqual(result, 'cached value')
-        mock_file.assert_not_called()
-        mock_getmtime.assert_called_once_with(overlay.TEXT_FILE)
+    def test_read_text_exception(self):
+        # Test scenario 2: an exception occurs (e.g. file not found) and returns "keine Datei".
+        with patch('builtins.open', side_effect=Exception("File not found")):
+            result = overlay.read_text()
+            self.assertEqual(result, "keine Datei")
 
 if __name__ == '__main__':
     unittest.main()

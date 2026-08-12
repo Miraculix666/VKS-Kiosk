@@ -9,4 +9,7 @@ node_modules/
 
 # Ignore massive ISO binaries
 *.iso
+
+# Ignore python cache files
 __pycache__/
+*.py[cod]
