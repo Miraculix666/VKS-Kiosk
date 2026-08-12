@@ -9,4 +9,4 @@ node_modules/
 
 # Ignore massive ISO binaries
 *.iso
-Linux/__pycache__/
+.env

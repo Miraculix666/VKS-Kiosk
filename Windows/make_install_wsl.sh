@@ -8,22 +8,24 @@
 export PATH=$PATH:/usr/sbin:/usr/local/sbin
 set -euo pipefail
 
-if [ "$EUID" -ne 0 ]; then
-  echo "FEHLER: Dieses Skript muss als root ausgefuehrt werden (sudo ./make_install_wsl.sh)."
-  exit 1
-fi
-
 CURRDIR="$(pwd)"
-
-# Source shared builder logic
-if [ -f "../shared_build.sh" ]; then
-    source ../shared_build.sh
-elif [ -f "shared_build.sh" ]; then
-    source shared_build.sh
+if [ -f "$CURRDIR/../.env" ]; then
+	set -a
+	source "$CURRDIR/../.env"
+	set +a
 else
-    echo "FEHLER: shared_build.sh konnte nicht gefunden werden!"
-    exit 1
+	echo "FEHLER: .env Datei nicht gefunden! Bitte eine .env Datei im Root-Verzeichnis mit VKS_ROOT_PASSWORD und VKS_USER_PASSWORD erstellen."
+	exit 1
 fi
+
+if [ -z "$VKS_ROOT_PASSWORD" ] || [ -z "$VKS_USER_PASSWORD" ]; then
+	echo "FEHLER: VKS_ROOT_PASSWORD oder VKS_USER_PASSWORD in der .env Datei nicht gesetzt!"
+	exit 1
+fi
+
+# Generate crypted passwords
+ROOT_PW_CRYPTED=$(echo "$VKS_ROOT_PASSWORD" | openssl passwd -6 -stdin)
+USER_PW_CRYPTED=$(echo "$VKS_USER_PASSWORD" | openssl passwd -6 -stdin)
 
 echo ""
 echo "=========================================="
@@ -141,6 +143,10 @@ ESCAPED_USER_PW=$(printf '%s\n' "$USER_PW" | sed -e 's/[\/&]/\\&/g')
 
 sed -i "s/ROOT_PASSWORD_PLACEHOLDER/$ESCAPED_ROOT_PW/g" ./preseed.cfg
 sed -i "s/USER_PASSWORD_PLACEHOLDER/$ESCAPED_USER_PW/g" ./preseed.cfg
+
+# Replace placeholders with crypted passwords
+sed -i "s|ROOT_PW_PLACEHOLDER|$ROOT_PW_CRYPTED|g" preseed.cfg
+sed -i "s|USER_PW_PLACEHOLDER|$USER_PW_CRYPTED|g" preseed.cfg
 
 # Sicherstellen dass ./install ein Verzeichnis ist (in manchen ISO-Versionen heisst es anders)
 INSTALL_DIR=""

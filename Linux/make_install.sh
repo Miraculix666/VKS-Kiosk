@@ -1,37 +1,44 @@
 #!/bin/bash
-# ============================================================
-# VKS-Kiosk ISO Builder (Linux-Version)
-# Baut die Debian-netinst.iso mit injizierten Kiosk-Skripten
-# und schreibt sie optional auf einen USB-Stick.
-# ============================================================
-
-echo "[0/4] Passwoerter für die VKS-Kiosk Installation festlegen"
-echo "Wenn du die Eingabe leer laesst, wird ein sicheres, zufaelliges Passwort generiert."
-echo ""
-
-read -r -s -p "  Root-Passwort (für Debug-Modus) eingeben: " INPUT_ROOT_PW
-echo ""
-if [ -z "$INPUT_ROOT_PW" ]; then
-    ROOT_PW="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12)"
-    echo "  -> Leere Eingabe. Generiertes Root-Passwort: $ROOT_PW"
-else
-    ROOT_PW="$INPUT_ROOT_PW"
-    echo "  -> Root-Passwort wurde gesetzt."
-fi
-echo ""
-
-read -r -s -p "  VKS-User-Passwort (vksuser) eingeben: " INPUT_USER_PW
-echo ""
-if [ -z "$INPUT_USER_PW" ]; then
-    USER_PW="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12)"
-    echo "  -> Leere Eingabe. Generiertes User-Passwort: $USER_PW"
-else
-    USER_PW="$INPUT_USER_PW"
-    echo "  -> User-Passwort wurde gesetzt."
-fi
-echo ""
+export PATH=$PATH:/usr/sbin/
 
 CURRDIR=$(dirname "$(readlink -f "$0")")
+if [ -f "$CURRDIR/../.env" ]; then
+	set -a
+	source "$CURRDIR/../.env"
+	set +a
+else
+	echo "FEHLER: .env Datei nicht gefunden! Bitte eine .env Datei im Root-Verzeichnis mit VKS_ROOT_PASSWORD und VKS_USER_PASSWORD erstellen."
+	exit 1
+fi
+
+if [ -z "$VKS_ROOT_PASSWORD" ] || [ -z "$VKS_USER_PASSWORD" ]; then
+	echo "FEHLER: VKS_ROOT_PASSWORD oder VKS_USER_PASSWORD in der .env Datei nicht gesetzt!"
+	exit 1
+fi
+
+# Generate crypted passwords
+ROOT_PW_CRYPTED=$(echo "$VKS_ROOT_PASSWORD" | openssl passwd -6 -stdin)
+USER_PW_CRYPTED=$(echo "$VKS_USER_PASSWORD" | openssl passwd -6 -stdin)
+
+############################################################################################################################
+#                                                                                                                          #
+#                                           		VKS-Futro Script                                                       #
+#                                                      16.04.2026                                                          #
+#                                                                                                                          #
+#          Ersteller: Markus Hertes                                                                                        #
+#                                  				                                                                           #
+#          Version 1.0 - macht was es soll                                                                                 #
+#		   Version 1.1 - Script und Grub inject																			   #
+#		   Version 1.2 - Abfrage der Größe des Sticks, um nicht zufällig eine Platte zu überschreiben (<128GB)			   #
+#						 																								   #
+#																														   #
+#		   Das Script lädt die zum Ausführungszeitpunkt aktuellste Debian-netinst.iso, entpackt diese, injiziert		   #
+#		   die benötigten Datein für die unattended Installation, baut die .iso wieder zusammen und schreibt sie		   #
+#		   auf einen USB-Stick.																							   #
+#		   OBACHT: dem Script ist egal, was und wieviele Partitionen auf dem Stick sind! Es reisst alles ein und 		   #
+#		   erstellt einen frischen Installationsstick!!!																   #
+#																														   #
+############################################################################################################################
 
 apt-get install syslinux syslinux-utils cpio coreutils xorriso 7zip -y
 
@@ -63,18 +70,22 @@ if [ ! -f "$ISO" ]; then
 fi
 STICK=$(lsusb | grep -v "root hub")
 WORKDIR=/temp
-CURRDIR=$(dirname "$(readlink -f "$0")")
-DAT=$(ls -c $CURRDIR/make_vks* | head -n1)
+DAT="$(ls -ct "${CURRDIR}"/make_vks*.sh 2>/dev/null | head -n 1 || true)"
+DAT="$(basename "$DAT")"
 rm -Rf $WORKDIR
 mkdir $WORKDIR
 7z x -o$WORKDIR $ISO
 cd $WORKDIR
 gunzip install.amd/initrd.gz
-cp $CURRDIR/preseed.cfg .
-sed -i "s/VKS_PASSWORD_PLACEHOLDER/$VKS_PASSWORD/g" preseed.cfg
-cp $DAT ./install/make_vks.sh
-cp $CURRDIR/overlay.py ./install
-cp $CURRDIR/grub.cfg ./boot/grub/
+cp "$CURRDIR/preseed.cfg" .
+
+# Replace placeholders with crypted passwords
+sed -i "s|ROOT_PW_PLACEHOLDER|$ROOT_PW_CRYPTED|g" preseed.cfg
+sed -i "s|USER_PW_PLACEHOLDER|$USER_PW_CRYPTED|g" preseed.cfg
+
+cp "$CURRDIR/$DAT" ./install/make_vks.sh
+cp "$CURRDIR/overlay.py" ./install
+cp "$CURRDIR/grub.cfg" ./boot/grub/
 echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
 rm preseed.cfg
 gzip install.amd/initrd
