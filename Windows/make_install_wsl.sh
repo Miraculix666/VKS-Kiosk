@@ -32,31 +32,19 @@ echo "=========================================="
 echo ""
 
 # ============================================================
-# [0/4] Passwoerter abfragen
+# [0/4] Passwort festlegen
 # ============================================================
-echo "[0/4] Passwoerter für die VKS-Kiosk Installation festlegen"
-echo "Wenn du die Eingabe leer laesst, wird ein sicheres, zufaelliges Passwort generiert."
+echo "[0/4] Passwort fuer root und vksuser festlegen ..."
+read -r -s -p "  Bitte Passwort eingeben (leer lassen fuer zufaelliges Passwort): " VKS_PASSWORD
 echo ""
 
-read -r -s -p "  Root-Passwort (für Debug-Modus) eingeben: " INPUT_ROOT_PW
-echo ""
-if [ -z "$INPUT_ROOT_PW" ]; then
-    ROOT_PW="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12)"
-    echo "  -> Leere Eingabe. Generiertes Root-Passwort: $ROOT_PW"
+if [ -z "$VKS_PASSWORD" ]; then
+    # Generate a random 16-character alphanumeric password
+    VKS_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 16)
+    echo "  Kein Passwort eingegeben. Zufaelliges Passwort generiert: $VKS_PASSWORD"
+    echo "  BITTE NOTIEREN! Es wird im Installations-Stick verwendet."
 else
-    ROOT_PW="$INPUT_ROOT_PW"
-    echo "  -> Root-Passwort wurde gesetzt."
-fi
-echo ""
-
-read -r -s -p "  VKS-User-Passwort (vksuser) eingeben: " INPUT_USER_PW
-echo ""
-if [ -z "$INPUT_USER_PW" ]; then
-    USER_PW="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12)"
-    echo "  -> Leere Eingabe. Generiertes User-Passwort: $USER_PW"
-else
-    USER_PW="$INPUT_USER_PW"
-    echo "  -> User-Passwort wurde gesetzt."
+    echo "  Passwort gesetzt."
 fi
 echo ""
 
@@ -145,6 +133,7 @@ echo "  Injiziere Kiosk-Skripte ..."
 # initrd patchen
 gunzip install.amd/initrd.gz
 cp "${CURRDIR}/preseed.cfg" .
+sed -i "s/VKS_PASSWORD_PLACEHOLDER/$VKS_PASSWORD/g" preseed.cfg
 
 # Escape special characters for sed
 ESCAPED_ROOT_PW=$(printf '%s\n' "$ROOT_PW" | sed -e 's/[\/&]/\\&/g')
