@@ -110,18 +110,25 @@ build_iso() {
     gunzip install.amd/initrd.gz
     cp "${CURRDIR}/preseed.cfg" .
 
-    # Inject hashed passwords into preseed.cfg
-    echo "  Generiere sichere Passwort-Hashes fuer preseed.cfg..."
-    V_ROOT_PW="${VKS_ROOT_PASSWORD:-mussuändern}"
-    V_USER_PW="${VKS_USER_PASSWORD:-vksuser}"
-    ROOT_HASH="$(echo "$V_ROOT_PW" | openssl passwd -6 -stdin)"
-    USER_HASH="$(echo "$V_USER_PW" | openssl passwd -6 -stdin)"
-    ESCAPED_ROOT_HASH="$(printf '%s
-' "$ROOT_HASH" | sed -e 's/[\/&]/\&/g')"
-    ESCAPED_USER_HASH="$(printf '%s
-' "$USER_HASH" | sed -e 's/[\/&]/\&/g')"
-    sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_HASH/g" preseed.cfg
-    sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_HASH/g" preseed.cfg
+    # Passwörter injizieren (sicher über Hashes statt Klartext)
+    ROOT_PW="${VKS_ROOT_PASSWORD:-mussuändern}"
+    USER_PW="${VKS_USER_PASSWORD:-vksuser}"
+
+    if command -v openssl >/dev/null 2>&1; then
+        ROOT_HASH=$(openssl passwd -6 "$ROOT_PW")
+        USER_HASH=$(openssl passwd -6 "$USER_PW")
+    else
+        ROOT_HASH=$(python3 -c 'import crypt, sys; print(crypt.crypt(sys.argv[1], crypt.mksalt(crypt.METHOD_SHA512)))' "$ROOT_PW")
+        USER_HASH=$(python3 -c 'import crypt, sys; print(crypt.crypt(sys.argv[1], crypt.mksalt(crypt.METHOD_SHA512)))' "$USER_PW")
+    fi
+
+    # Sonderzeichen für sed escapen (insb. / und &)
+    ESCAPED_ROOT_HASH=$(printf '%s\n' "$ROOT_HASH" | sed -e 's/[\/&]/\\&/g')
+    ESCAPED_USER_HASH=$(printf '%s\n' "$USER_HASH" | sed -e 's/[\/&]/\\&/g')
+
+    echo "  Passe preseed.cfg an (Passwörter setzen)..."
+    sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_HASH/" preseed.cfg
+    sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_HASH/" preseed.cfg
 
     INSTALL_DIR=""
     for d in install install.amd; do
