@@ -1,8 +1,10 @@
 import unittest
 from unittest.mock import mock_open, patch
 import os
+import sys
 
-from Linux.overlay import read_text
+sys.path.insert(0, os.path.dirname(__file__))
+from overlay import read_text
 
 class TestOverlay(unittest.TestCase):
     @patch("builtins.open", new_callable=mock_open, read_data="v1.2.3\n")
