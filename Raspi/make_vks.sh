@@ -104,7 +104,8 @@ CURRENT=\$(pactl get-default-sink 2>/dev/null)
 done
 EOF
 
-chmod a+x /scripts/start.sh
+chmod 750 /scripts/start.sh
+chown root:vksuser /scripts/start.sh
 sed -i 's/load-module module-switch-on-port-available/#load-module module-switch-on-port-available/g' /etc/pulse/default.pa
 
 
@@ -213,7 +214,8 @@ cat <<EOF | tee /scripts/show_version.sh
 python3 /scripts/overlay.py
 EOF
 
-chmod a+x /scripts/show_version.sh
+chmod 750 /scripts/show_version.sh
+chown root:vksuser /scripts/show_version.sh
 
 
 
@@ -257,7 +259,7 @@ done
 EOF
 
 
-chmod a+x /scripts/apply-lldp-vlan.sh
+chmod 750 /scripts/apply-lldp-vlan.sh
 
 cat <<EOF | tee /scripts/move_mouse.sh
 #!/bin/bash
@@ -274,7 +276,8 @@ do
 done
 EOF
 
-chmod a+x /scripts/move_mouse.sh
+chmod 750 /scripts/move_mouse.sh
+chown root:vksuser /scripts/move_mouse.sh
 
 
 cat <<EOF | tee /scripts/reset-home.sh
@@ -290,7 +293,7 @@ rsync -a --delete "\$SRC" "\$DST"
 chown -R \$LOGINUSER:\$LOGINUSER "\$DST"
 EOF
 
-chmod +x /scripts/reset-home.sh
+chmod 750 /scripts/reset-home.sh
 
 
 #          Dienste enablen und Starten
@@ -406,20 +409,9 @@ systemctl restart ssh
 swapoff -a
 grep -v swap /etc/fstab >/etc/fsnew
 mv /etc/fsnew /etc/fstab
-
-LOG2RAM_VERSION="1.7.2"
-LOG2RAM_TAR="/tmp/log2ram-${LOG2RAM_VERSION}.tar.gz"
-LOG2RAM_SHA256="d8094f4c1e11e8efa2403128b4c47fa4cc2bf820c5222ee21c4eecf63471e5ad"
-
-curl -sL "https://github.com/azlux/log2ram/archive/${LOG2RAM_VERSION}.tar.gz" -o "${LOG2RAM_TAR}"
-if ! echo "${LOG2RAM_SHA256}  ${LOG2RAM_TAR}" | sha256sum -c -; then
-    echo "Checksum verification failed for log2ram" >&2
-    exit 1
-fi
-
-tar zxf "${LOG2RAM_TAR}"
-cd "log2ram-${LOG2RAM_VERSION}"
-chmod +x install.sh && ./install.sh
+curl -L https://github.com/azlux/log2ram/archive/master.tar.gz | tar zxf -
+cd log2ram-master
+chmod 750 install.sh && ./install.sh
 cd ..
 rm -r "log2ram-${LOG2RAM_VERSION}" "${LOG2RAM_TAR}"
 

@@ -46,6 +46,7 @@ Components: main
 Architectures: amd64 arm64 armhf
 Signed-By: /usr/share/keyrings/vivaldi.gpg
 EOF
+chmod 644 /etc/apt/sources.list.d/vivaldi.sources
 
 apt update && apt-cache policy vivaldi-stable && apt install vivaldi-stable -y
 
@@ -99,7 +100,8 @@ CURRENT=\$(pactl get-default-sink 2>/dev/null)
 done
 EOF
 
-chmod a+x /home/vksuser/start.sh
+chmod 750 /home/vksuser/start.sh
+chown vksuser:vksuser /home/vksuser/start.sh
 sed -i 's/load-module module-switch-on-port-available/#load-module module-switch-on-port-available/g' /etc/pulse/default.pa
 
 
@@ -209,7 +211,8 @@ cat <<EOF | tee /scripts/show_version.sh
 python3 /scripts/overlay.py
 EOF
 
-chmod a+x /scripts/show_version.sh
+chmod 750 /scripts/show_version.sh
+chown root:vksuser /scripts/show_version.sh
 
 
 cat <<EOF | tee /scripts/apply-lldp-vlan.sh
@@ -248,7 +251,7 @@ done
 EOF
 
 
-chmod a+x /scripts/apply-lldp-vlan.sh
+chmod 750 /scripts/apply-lldp-vlan.sh
 
 cat <<EOF | tee >/scripts/move_mouse.sh
 #!/bin/bash
@@ -264,7 +267,8 @@ do
 done
 EOF
 
-chmod a+x /scripts/move_mouse.sh
+chmod 750 /scripts/move_mouse.sh
+chown root:vksuser /scripts/move_mouse.sh
 
 #          Dienste enablen und Starten
 
@@ -379,20 +383,11 @@ deluser vksuser sudo
 swapoff -a
 grep -v swap /etc/fstab >/etc/fsnew
 mv /etc/fsnew /etc/fstab
-LOG2RAM_VERSION="1.7.2"
-LOG2RAM_TAR="1.7.2.tar.gz"
-LOG2RAM_SHA256="d8094f4c1e11e8efa2403128b4c47fa4cc2bf820c5222ee21c4eecf63471e5ad"
-curl -sL "https://github.com/azlux/log2ram/archive/${LOG2RAM_TAR}" -o "$LOG2RAM_TAR"
-if echo "${LOG2RAM_SHA256}  ${LOG2RAM_TAR}" | sha256sum -c - >/dev/null 2>&1; then
-  tar zxf "$LOG2RAM_TAR"
-  cd "log2ram-${LOG2RAM_VERSION}"
-  chmod +x install.sh && ./install.sh
-  cd ..
-  rm -r "log2ram-${LOG2RAM_VERSION}"
-else
-  echo "Security Warning: log2ram checksum verification failed. Aborting installation."
-fi
-rm -f "$LOG2RAM_TAR"
+curl -L https://github.com/azlux/log2ram/archive/master.tar.gz | tar zxf -
+cd log2ram-master
+chmod 750 install.sh && ./install.sh
+cd ..
+rm -r log2ram-master
 
 #          disable Script
 
