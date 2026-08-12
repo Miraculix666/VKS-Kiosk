@@ -1,11 +1,10 @@
 import unittest
-from unittest.mock import mock_open, patch
+from unittest.mock import mock_open, patch, MagicMock
 import os
 import sys
 
-# Ensure Windows/ is in sys.path so we can import overlay
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import overlay
+from Windows.overlay import read_text
+import Windows.overlay as overlay
 
 class TestOverlay(unittest.TestCase):
     def test_read_text_success(self):
@@ -21,5 +20,13 @@ class TestOverlay(unittest.TestCase):
             result = overlay.read_text()
             self.assertEqual(result, "keine Datei")
 
-if __name__ == '__main__':
+    @patch("Windows.overlay.read_text", return_value="v1.2.3")
+    def test_update(self, mock_read_text):
+        overlay.label = MagicMock()
+        overlay.root = MagicMock()
+        overlay.update()
+        overlay.label.config.assert_called_once_with(text="v1.2.3")
+        overlay.root.after.assert_called_once_with(overlay.REFRESH_MS, overlay.update)
+
+if __name__ == "__main__":
     unittest.main()
