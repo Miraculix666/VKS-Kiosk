@@ -14,19 +14,20 @@ class TestOverlay(unittest.TestCase):
 
     @patch('os.path.getmtime')
     def test_read_text_success(self, mock_getmtime):
-        # Test scenario 1: file is read successfully and returns trimmed content.
-        mock_getmtime.return_value = 12345.67
+        mock_getmtime.return_value = 1000
         mocked_file_content = "   Test Version 1.0.0   \n"
         with patch('builtins.open', mock_open(read_data=mocked_file_content)):
             result = overlay.read_text()
             self.assertEqual(result, "Test Version 1.0.0")
+            self.assertEqual(overlay.last_mtime, 1000)
 
     @patch('os.path.getmtime')
     def test_read_text_exception(self, mock_getmtime):
-        # Test scenario 2: an exception occurs (e.g. file not found) and returns "keine Datei".
+        # Even if getmtime throws an error, it should catch it
         mock_getmtime.side_effect = Exception("File not found")
         result = overlay.read_text()
         self.assertEqual(result, "keine Datei")
+        self.assertIsNone(overlay.last_mtime)
 
 if __name__ == '__main__':
     unittest.main()

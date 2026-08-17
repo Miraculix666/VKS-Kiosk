@@ -17,7 +17,9 @@ def read_text():
             last_mtime = current_mtime
     except Exception:
         cached_text = "keine Datei"
+        last_mtime = None
     return cached_text
+
 def update():
     label.config(text=read_text())
     root.after(REFRESH_MS, update)
