@@ -17,7 +17,7 @@ class TestOverlay(unittest.TestCase):
 
     def test_read_text_exception(self):
         # Test scenario 2: an exception occurs (e.g. file not found) and returns "keine Datei".
-        with patch('builtins.open', side_effect=Exception("File not found")):
+        with patch('builtins.open', side_effect=FileNotFoundError):
             result = overlay.read_text()
             self.assertEqual(result, "keine Datei")
 
