@@ -7,8 +7,7 @@ By hardcoding the credentials in plaintext inside the repository's configuration
 🛡️ **Solution:**
 - Modified `.env` to include commented-out password template variables instead of hardcoded fallbacks.
 - Updated both `preseed.cfg` files to use `passwd/root-password-crypted` and `passwd/user-password-crypted` with placeholder values (`ROOT_PW_PLACEHOLDER`, `USER_PW_PLACEHOLDER`) and removed the plaintext `*-again` fields.
-- Added `openssl` to all package manager installation lists in `shared_build.sh`.
 - Added logic in `shared_build.sh` to prompt the user or generate random passwords via `openssl rand -base64 12`, ensuring passwords are securely gathered.
 - Hashed the gathered passwords using `openssl passwd -6` and injected them dynamically into the `preseed.cfg` using `sed`.
 
-Rationale for testing: Since this patch strictly modifies shell scripts and configuration injection used during the ISO build process, traditional Python unit testing is not applicable. The fixes were validated using `bash -n` syntax checks and mocked bash scripts to ensure the `openssl` random generation and hash injection logic behave correctly and securely.
+Rationale for testing: The fixes modify shell scripts and configuration injection used during the ISO build process, traditional Python unit testing is not applicable. The fixes were validated using `bash -n` syntax checks and mocked bash scripts to ensure the `openssl` random generation and hash injection logic behave correctly and securely.

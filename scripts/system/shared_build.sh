@@ -17,8 +17,6 @@ DEBIAN_ISO_URL=${DEBIAN_ISO_URL:-"https://cdimage.debian.org/debian-cd/current/a
 SCRIPT_VERSION=${SCRIPT_VERSION:-"2.0"}
 AUTO_WIPE_TARGET_DISK=${AUTO_WIPE_TARGET_DISK:-false}
 CLEANUP_PROMPT=${CLEANUP_PROMPT:-true}
-VKS_ROOT_PASSWORD=${VKS_ROOT_PASSWORD:-"mussuändern"}
-VKS_USER_PASSWORD=${VKS_USER_PASSWORD:-"vksuser"}
 
 install_dependencies() {
     echo "=========================================="
@@ -111,8 +109,26 @@ build_iso() {
     cp "${CURRDIR}/preseed.cfg" .
 
     # Inject hashed passwords into preseed.cfg
-    ROOT_PW="${VKS_ROOT_PASSWORD:-mussuändern}"
-    USER_PW="${VKS_USER_PASSWORD:-vksuser}"
+    if [ -z "${VKS_ROOT_PASSWORD:-}" ]; then
+        if [ -t 0 ]; then
+            read -r -s -p "Enter root password for VKS: " VKS_ROOT_PASSWORD
+            echo
+        else
+            VKS_ROOT_PASSWORD=$(openssl rand -base64 12)
+            echo "Generated random root password (running headlessly)."
+        fi
+    fi
+    if [ -z "${VKS_USER_PASSWORD:-}" ]; then
+        if [ -t 0 ]; then
+            read -r -s -p "Enter user password for vksuser: " VKS_USER_PASSWORD
+            echo
+        else
+            VKS_USER_PASSWORD=$(openssl rand -base64 12)
+            echo "Generated random user password (running headlessly)."
+        fi
+    fi
+    ROOT_PW="${VKS_ROOT_PASSWORD}"
+    USER_PW="${VKS_USER_PASSWORD}"
     ROOT_HASH="$(openssl passwd -6 "$ROOT_PW")"
     USER_HASH="$(openssl passwd -6 "$USER_PW")"
 
