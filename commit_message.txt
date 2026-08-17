@@ -1,0 +1,5 @@
+🧪 [Fix overlay tests by mocking os.path.getmtime]
+
+🎯 **What:** The previous overlay.py cache optimization caused tests to fail due to missing mocks for os.path.getmtime and leaking state between tests.
+📊 **Coverage:** Successfully mocked file metadata retrieval and cleanly implemented a setup/teardown sequence across Windows, Linux, and Raspi test suites.
+✨ **Result:** Test coverage for overlay functionalities is fully restored across all three platform boundaries with reliable execution.

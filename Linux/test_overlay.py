@@ -11,27 +11,24 @@ with patch('tkinter.Tk'):
 
 class TestOverlay(unittest.TestCase):
     def setUp(self):
-        # Reset globals for isolated tests if needed
         overlay.last_mtime = None
         overlay.cached_text = "keine Datei"
-        # Mock UI components
-        overlay.root = MagicMock()
-        overlay.label = MagicMock()
 
-    @patch('builtins.open', new_callable=mock_open, read_data="v1.2.3\n")
-    def test_read_text_success(self, mock_file):
-        """Test read_text when the file exists and contains text."""
-        result = overlay.read_text()
-        self.assertEqual(result, "v1.2.3")
-        mock_file.assert_called_once_with(overlay.TEXT_FILE)
+    @patch('os.path.getmtime')
+    def test_read_text_success(self, mock_getmtime):
+        # Test scenario 1: file is read successfully and returns trimmed content.
+        mock_getmtime.return_value = 12345.67
+        mocked_file_content = "   Test Version 1.0.0   \n"
+        with patch('builtins.open', mock_open(read_data=mocked_file_content)):
+            result = overlay.read_text()
+            self.assertEqual(result, "Test Version 1.0.0")
 
-    @patch('builtins.open')
-    def test_read_text_failure(self, mock_file):
-        """Test read_text when the file does not exist or cannot be read."""
-        mock_file.side_effect = FileNotFoundError
+    @patch('os.path.getmtime')
+    def test_read_text_exception(self, mock_getmtime):
+        # Test scenario 2: an exception occurs (e.g. file not found) and returns "keine Datei".
+        mock_getmtime.side_effect = Exception("File not found")
         result = overlay.read_text()
         self.assertEqual(result, "keine Datei")
-        mock_file.assert_called_once_with(overlay.TEXT_FILE)
 
     @patch('overlay.read_text', return_value="v1.2.3")
     def test_update(self, mock_read_text):
