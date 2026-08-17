@@ -1,7 +1,0 @@
-🎯 **What:** The `except:` clause in `Windows/overlay.py`, `Linux/overlay.py`, and `Raspi/overlay.py` has been updated to `except Exception:`. Also added missing mock `os.path.getmtime` in `Raspi/test_overlay.py` to correctly test `Raspi/overlay.py`.
-
-💡 **Why:** Bare `except:` clauses are bad practice in Python as they catch `SystemExit` and `KeyboardInterrupt` exceptions, potentially making it hard to exit the program. Catching `Exception` avoids catching these system-exiting exceptions.
-
-✅ **Verification:** Ensured syntax with `python3 -m py_compile` and ran the full unit test suite `test_overlay.py` for all three platform directories. The modified `Raspi/test_overlay.py` accurately tests `Raspi/overlay.py` file reads with `os.path.getmtime`.
-
-✨ **Result:** A cleaner and safer error handling process that adheres to best Python practices without altering runtime functionality.
