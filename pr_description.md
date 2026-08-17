@@ -1,14 +1,10 @@
 🎯 **What:**
-Removed hardcoded plaintext root and user passwords (`mussuändern` and `vksuser`) from `Linux/preseed.cfg` and `Windows/preseed.cfg`. Replaced the static entries with `passwd-crypted` directives containing placeholders. The build script (`shared_build.sh`) now interactively prompts for passwords during execution, or automatically generates secure, random base64 passwords if running headlessly. The passwords are then hashed securely (SHA-512) and injected dynamically into the `preseed.cfg` artifact.
+Replaced the `--password-store=basic` flag with the secure `--password-store=gnome` flag for the Chromium browser in `Raspi/make_vks.sh`.
 
 ⚠️ **Risk:**
-By hardcoding the credentials in plaintext inside the repository's configuration files, any attacker with access to the codebase (or the generated ISO) could easily extract the default root and user passwords. This allowed unauthorized root access to any system installed using this ISO configuration.
+The Chromium browser was configured to use `--password-store=basic`. This stored any saved passwords in plaintext on the disk rather than leveraging a secure keyring or keychain manager. If a malicious user gained access to the local filesystem (even with a non-root user account), they could easily read all saved passwords from the browser profile.
 
 🛡️ **Solution:**
-- Modified `.env` to include commented-out password template variables instead of hardcoded fallbacks.
-- Updated both `preseed.cfg` files to use `passwd/root-password-crypted` and `passwd/user-password-crypted` with placeholder values (`ROOT_PW_PLACEHOLDER`, `USER_PW_PLACEHOLDER`) and removed the plaintext `*-again` fields.
-- Added `openssl` to all package manager installation lists in `shared_build.sh`.
-- Added logic in `shared_build.sh` to prompt the user or generate random passwords via `openssl rand -base64 12`, ensuring passwords are securely gathered.
-- Hashed the gathered passwords using `openssl passwd -6` and injected them dynamically into the `preseed.cfg` using `sed`.
-
-Rationale for testing: Since this patch strictly modifies shell scripts and configuration injection used during the ISO build process, traditional Python unit testing is not applicable. The fixes were validated using `bash -n` syntax checks and mocked bash scripts to ensure the `openssl` random generation and hash injection logic behave correctly and securely.
+- Modified `Raspi/make_vks.sh` to use `--password-store=gnome`.
+- `gnome-keyring` is already listed in the package install line (`apt install ... gnome-keyring -y`), so the required system dependency for this secure password store is present.
+- The `make_vks.sh` script installs and runs chromium as a kiosk, which previously used basic auth storage.
