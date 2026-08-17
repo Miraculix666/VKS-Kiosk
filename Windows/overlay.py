@@ -4,6 +4,7 @@ import os
 TEXT_FILE = "/scripts/version.txt"
 REFRESH_MS = 1000
 
+
 last_mtime = None
 cached_text = "keine Datei"
 
@@ -11,12 +12,13 @@ def read_text():
     global last_mtime, cached_text
     try:
         current_mtime = os.path.getmtime(TEXT_FILE)
-        if current_mtime != last_mtime:
+        if last_mtime is None or current_mtime != last_mtime:
             with open(TEXT_FILE) as f:
                 cached_text = f.read().strip()
             last_mtime = current_mtime
     except Exception:
         cached_text = "keine Datei"
+        last_mtime = None
     return cached_text
 def update():
     label.config(text=read_text())
