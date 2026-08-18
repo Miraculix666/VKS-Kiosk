@@ -1,10 +1,6 @@
-🎯 **What:** Replaced the generic `except Exception:` clause with the specific `except FileNotFoundError:` in `Linux/overlay.py`, `Raspi/overlay.py`, and `Windows/overlay.py`. Also updated the corresponding unit tests (`test_overlay.py` in each directory) to mock `FileNotFoundError` instead of `Exception` or `IOError`.
+🧹 [code health improvement description]
 
-💡 **Why:** Catching generic exceptions (even `Exception`) can accidentally mask unrelated programmatic errors, such as syntax or type errors. Since the only expected failure mode here is a missing file when attempting to read the configuration, `FileNotFoundError` is the precise and correct exception to catch. This improves debuggability and aligns with Python best practices for file I/O operations.
-
-✅ **Verification:**
-- Successfully ran `python3 -m py_compile` on all modified files to ensure syntax integrity.
-- Verified that all unit tests (`python3 -m unittest discover -s [Platform] -p 'test_*.py'`) for all three platform directories pass successfully after the update.
-- Used `grep` to confirm that no other `except Exception:` clauses exist in the Python files within the repository.
-
-✨ **Result:** A safer, more maintainable code structure that avoids swallowing unexpected errors during file I/O, maintaining full functional parity with better error hygiene.
+🎯 **What:** The `except:` clause in `Windows/overlay.py`, `Linux/overlay.py`, and `Raspi/overlay.py` has been updated to `except Exception:`.
+💡 **Why:** Bare `except:` clauses are bad practice in Python as they catch `SystemExit` and `KeyboardInterrupt` exceptions, potentially making it hard to exit the program. Catching `Exception` avoids catching these system-exiting exceptions, leading to more robust and standard-compliant code.
+✅ **Verification:** Unit tests in `Windows/test_overlay.py` and other equivalent platform directories ensure that the file reading logic gracefully handles missing files or read errors, now specifically catching `Exception` instead of all possible bases. Run the suite to ensure all tests still pass.
+✨ **Result:** A safer code structure that avoids inadvertently masking system-level termination signals or unexpected deep failures, thereby improving maintainability.
