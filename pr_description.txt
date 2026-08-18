@@ -1,7 +1,6 @@
-🎯 **What:** The `except:` clause in `Windows/overlay.py`, `Linux/overlay.py`, and `Raspi/overlay.py` has been updated to `except Exception:`. Also added missing mock `os.path.getmtime` in `Raspi/test_overlay.py` to correctly test `Raspi/overlay.py`.
+🧹 [code health improvement description]
 
-💡 **Why:** Bare `except:` clauses are bad practice in Python as they catch `SystemExit` and `KeyboardInterrupt` exceptions, potentially making it hard to exit the program. Catching `Exception` avoids catching these system-exiting exceptions.
-
-✅ **Verification:** Ensured syntax with `python3 -m py_compile` and ran the full unit test suite `test_overlay.py` for all three platform directories. The modified `Raspi/test_overlay.py` accurately tests `Raspi/overlay.py` file reads with `os.path.getmtime`.
-
-✨ **Result:** A cleaner and safer error handling process that adheres to best Python practices without altering runtime functionality.
+🎯 **What:** The `except:` clause in `Windows/overlay.py`, `Linux/overlay.py`, and `Raspi/overlay.py` has been updated to `except Exception:`.
+💡 **Why:** Bare `except:` clauses are bad practice in Python as they catch `SystemExit` and `KeyboardInterrupt` exceptions, potentially making it hard to exit the program. Catching `Exception` avoids catching these system-exiting exceptions, leading to more robust and standard-compliant code.
+✅ **Verification:** Unit tests in `Windows/test_overlay.py` and other equivalent platform directories ensure that the file reading logic gracefully handles missing files or read errors, now specifically catching `Exception` instead of all possible bases. Run the suite to ensure all tests still pass.
+✨ **Result:** A safer code structure that avoids inadvertently masking system-level termination signals or unexpected deep failures, thereby improving maintainability.
