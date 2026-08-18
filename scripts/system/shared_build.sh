@@ -17,8 +17,8 @@ DEBIAN_ISO_URL=${DEBIAN_ISO_URL:-"https://cdimage.debian.org/debian-cd/current/a
 SCRIPT_VERSION=${SCRIPT_VERSION:-"2.0"}
 AUTO_WIPE_TARGET_DISK=${AUTO_WIPE_TARGET_DISK:-false}
 CLEANUP_PROMPT=${CLEANUP_PROMPT:-true}
-VKS_ROOT_PASSWORD=${VKS_ROOT_PASSWORD:-"mussuändern"}
-VKS_USER_PASSWORD=${VKS_USER_PASSWORD:-"vksuser"}
+VKS_ROOT_PASSWORD=${VKS_ROOT_PASSWORD:-""}
+VKS_USER_PASSWORD=${VKS_USER_PASSWORD:-""}
 
 install_dependencies() {
     echo "=========================================="
@@ -110,9 +110,35 @@ build_iso() {
     gunzip install.amd/initrd.gz
     cp "${CURRDIR}/preseed.cfg" .
 
+    if [ -z "$VKS_ROOT_PASSWORD" ]; then
+        if [ -t 0 ] && command -v whiptail >/dev/null 2>&1; then
+            VKS_ROOT_PASSWORD=$(whiptail --passwordbox "Bitte Root-Passwort eingeben (leer fuer Zufall):" 8 78 3>&1 1>&2 2>&3) || true
+        elif [ -t 0 ]; then
+            read -r -s -p "Bitte Root-Passwort eingeben (leer fuer Zufall): " VKS_ROOT_PASSWORD
+            echo ""
+        fi
+        if [ -z "$VKS_ROOT_PASSWORD" ]; then
+            VKS_ROOT_PASSWORD=$(openssl rand -base64 12)
+            echo "Generiertes Root-Passwort: $VKS_ROOT_PASSWORD"
+        fi
+    fi
+
+    if [ -z "$VKS_USER_PASSWORD" ]; then
+        if [ -t 0 ] && command -v whiptail >/dev/null 2>&1; then
+            VKS_USER_PASSWORD=$(whiptail --passwordbox "Bitte User-Passwort (vksuser) eingeben (leer fuer Zufall):" 8 78 3>&1 1>&2 2>&3) || true
+        elif [ -t 0 ]; then
+            read -r -s -p "Bitte User-Passwort (vksuser) eingeben (leer fuer Zufall): " VKS_USER_PASSWORD
+            echo ""
+        fi
+        if [ -z "$VKS_USER_PASSWORD" ]; then
+            VKS_USER_PASSWORD=$(openssl rand -base64 12)
+            echo "Generiertes User-Passwort: $VKS_USER_PASSWORD"
+        fi
+    fi
+
     # Inject hashed passwords into preseed.cfg
-    ROOT_PW="${VKS_ROOT_PASSWORD:-mussuändern}"
-    USER_PW="${VKS_USER_PASSWORD:-vksuser}"
+    ROOT_PW="${VKS_ROOT_PASSWORD}"
+    USER_PW="${VKS_USER_PASSWORD}"
     ROOT_HASH="$(openssl passwd -6 "$ROOT_PW")"
     USER_HASH="$(openssl passwd -6 "$USER_PW")"
 
@@ -120,8 +146,8 @@ build_iso() {
     ESCAPED_ROOT_HASH=$(printf '%s\n' "$ROOT_HASH" | sed -e 's/[\/&]/\\&/g')
     ESCAPED_USER_HASH=$(printf '%s\n' "$USER_HASH" | sed -e 's/[\/&]/\\&/g')
 
-    sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_HASH/g" preseed.cfg
-    sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_HASH/g" preseed.cfg
+    sed -i "s/###ROOT_PASSWORD###/$ESCAPED_ROOT_HASH/g" preseed.cfg
+    sed -i "s/###USER_PASSWORD###/$ESCAPED_USER_HASH/g" preseed.cfg
 
     INSTALL_DIR=""
     for d in install install.amd; do
@@ -153,13 +179,13 @@ build_iso() {
     if [ -n "$VKS_ROOT_PASSWORD" ]; then
         ROOT_HASH=$(openssl passwd -6 "$VKS_ROOT_PASSWORD")
         ESCAPED_ROOT_HASH=$(printf '%s\n' "$ROOT_HASH" | sed -e 's/[\/&]/\\&/g')
-        sed -i "s/ROOT_PW_PLACEHOLDER/$ESCAPED_ROOT_HASH/g" preseed.cfg
+        sed -i "s/###ROOT_PASSWORD###/$ESCAPED_ROOT_HASH/g" preseed.cfg
     fi
 
     if [ -n "$VKS_USER_PASSWORD" ]; then
         USER_HASH=$(openssl passwd -6 "$VKS_USER_PASSWORD")
         ESCAPED_USER_HASH=$(printf '%s\n' "$USER_HASH" | sed -e 's/[\/&]/\\&/g')
-        sed -i "s/USER_PW_PLACEHOLDER/$ESCAPED_USER_HASH/g" preseed.cfg
+        sed -i "s/###USER_PASSWORD###/$ESCAPED_USER_HASH/g" preseed.cfg
     fi
 
     echo preseed.cfg | cpio -o -H newc -A -F install.amd/initrd
