@@ -1,5 +1,10 @@
-🎯 **What:** The `update` function in `Linux/overlay.py` was missing test coverage. The `test_overlay.py` file has been enhanced to include tests for both `read_text` (success and failure cases) and `update` using the `unittest.mock` framework.
+🎯 **What:** Replaced the generic `except Exception:` clause with the specific `except FileNotFoundError:` in `Linux/overlay.py`, `Raspi/overlay.py`, and `Windows/overlay.py`. Also updated the corresponding unit tests (`test_overlay.py` in each directory) to mock `FileNotFoundError` instead of `Exception` or `IOError`.
 
-📊 **Coverage:** The tests now verify that `read_text` returns the correct string when the file exists, returns 'keine Datei' when a `FileNotFoundError` occurs, and that `update` properly configures the UI label and schedules recursive calls using `root.after`. It mocks the `tkinter.Tk` variables `root` and `label` in `Linux/overlay.py`.
+💡 **Why:** Catching generic exceptions (even `Exception`) can accidentally mask unrelated programmatic errors, such as syntax or type errors. Since the only expected failure mode here is a missing file when attempting to read the configuration, `FileNotFoundError` is the precise and correct exception to catch. This improves debuggability and aligns with Python best practices for file I/O operations.
 
-✨ **Result:** Test coverage for `Linux/overlay.py` has improved. The tests confirm they catch bugs when the file is intentionally broken, leading to more resilient GUI components.
+✅ **Verification:**
+- Successfully ran `python3 -m py_compile` on all modified files to ensure syntax integrity.
+- Verified that all unit tests (`python3 -m unittest discover -s [Platform] -p 'test_*.py'`) for all three platform directories pass successfully after the update.
+- Used `grep` to confirm that no other `except Exception:` clauses exist in the Python files within the repository.
+
+✨ **Result:** A safer, more maintainable code structure that avoids swallowing unexpected errors during file I/O, maintaining full functional parity with better error hygiene.

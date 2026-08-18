@@ -19,10 +19,8 @@ class TestOverlay(unittest.TestCase):
         self.assertEqual(result, "v1.0")
         mock_file.assert_called_once_with(overlay.TEXT_FILE)
 
-    @patch('os.path.getmtime')
-    @patch('builtins.open', side_effect=IOError)
-    def test_read_text_error(self, mock_file, mock_getmtime):
-        mock_getmtime.return_value = 1000.0
+    @patch('builtins.open', side_effect=FileNotFoundError)
+    def test_read_text_error(self, mock_file):
         result = overlay.read_text()
         self.assertEqual(result, "keine Datei")
 
