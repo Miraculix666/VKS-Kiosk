@@ -12,7 +12,7 @@ def read_text():
     try:
         with open(TEXT_FILE) as f:
             return f.read().strip()
-    except Exception:
+    except FileNotFoundError:
         return "keine Datei"
 def update():
     label.config(text=read_text())
